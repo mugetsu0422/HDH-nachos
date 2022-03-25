@@ -28,7 +28,14 @@
 					// See definitions listed under #else
 class OpenFile {
   public:
+	int type;
+	// 0: đọc và ghi
+	// 1: chỉ đọc
+	// 2: console input
+	// 3: console output
     OpenFile(int f) { file = f; currentOffset = 0; }	// open the file
+	// Thêm hàm
+	OpenFile(int f, int _type) { file = f; currentOffset = 0;, type = _type; }
     ~OpenFile() { Close(file); }			// close the file
 
     int ReadAt(char *into, int numBytes, int position) { 
@@ -63,9 +70,15 @@ class FileHeader;
 
 class OpenFile {
   public:
+  	int type;
+	// 0: đọc và ghi
+	// 1: chỉ đọc
+	// 2: console input
+	// 3: console output
     OpenFile(int sector);		// Open a file whose header is located
-					// at "sector" on the disk
-    ~OpenFile();			// Close the file
+								// at "sector" on the disk
+	OpenFile(int sector, int _type);
+    ~OpenFile();				// Close the file
 
     void Seek(int position); 		// Set the position from which to 
 					// start reading/writing -- UNIX lseek

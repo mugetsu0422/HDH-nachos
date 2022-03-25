@@ -43,7 +43,17 @@
 				// implementation is available
 class FileSystem {
   public:
-    FileSystem(bool format) {}
+	OpenFile** table;
+	int index;
+	// Viết lại hàm
+    FileSystem(bool format) 
+	{
+		table = new OpenFile*[10];
+		for(int i = 0; i < 10; i++)
+			table[i] = NULL;
+		this->Create("stdin", 0);
+		this->Create("stdout", 0);
+	}
 
     bool Create(char *name, int initialSize) { 
 	int fileDescriptor = OpenForWrite(name);
@@ -53,12 +63,22 @@ class FileSystem {
 	return TRUE; 
 	}
 
-    OpenFile* Open(char *name) {
+    OpenFile* Open(char *name) 
+	{
 	  int fileDescriptor = OpenForReadWrite(name, FALSE);
 
 	  if (fileDescriptor == -1) return NULL;
 	  return new OpenFile(fileDescriptor);
-      }
+    }
+
+	// Hàm Open với tham số mới là type
+	OpenFile* Open(char *name, int _type) 
+	{
+	  int fileDescriptor = OpenForReadWrite(name, FALSE);
+
+	  if (fileDescriptor == -1) return NULL;
+	  return new OpenFile(fileDescriptor, _type);
+    }
 
     bool Remove(char *name) { return Unlink(name) == 0; }
 
@@ -67,6 +87,8 @@ class FileSystem {
 #else // FILESYS
 class FileSystem {
   public:
+  	OpenFile** table;
+	int index;
     FileSystem(bool format);		// Initialize the file system.
 					// Must be called *after* "synchDisk" 
 					// has been initialized.
@@ -78,6 +100,7 @@ class FileSystem {
 					// Create a file (UNIX creat)
 
     OpenFile* Open(char *name); 	// Open a file (UNIX open)
+	OpenFile* Open(char *name, int _type);
 
     bool Remove(char *name);  		// Delete a file (UNIX unlink)
 

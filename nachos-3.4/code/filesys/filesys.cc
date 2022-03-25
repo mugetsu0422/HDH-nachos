@@ -224,8 +224,7 @@ FileSystem::Create(char *name, int initialSize)
 //	"name" -- the text name of the file to be opened
 //----------------------------------------------------------------------
 
-OpenFile *
-FileSystem::Open(char *name)
+OpenFile* FileSystem::Open(char *name)
 { 
     Directory *directory = new Directory(NumDirEntries);
     OpenFile *openFile = NULL;
@@ -235,7 +234,22 @@ FileSystem::Open(char *name)
     directory->FetchFrom(directoryFile);
     sector = directory->Find(name); 
     if (sector >= 0) 		
-	openFile = new OpenFile(sector);	// name was found in directory 
+	    openFile = new OpenFile(sector);	// name was found in directory 
+    delete directory;
+    return openFile;				// return NULL if not found
+}
+
+OpenFile* FileSystem::Open(char *name, int _type)
+{ 
+    Directory *directory = new Directory(NumDirEntries);
+    OpenFile *openFile = NULL;
+    int sector;
+
+    DEBUG('f', "Opening file %s\n", name);
+    directory->FetchFrom(directoryFile);
+    sector = directory->Find(name); 
+    if (sector >= 0) 		
+	    openFile = new OpenFile(sector, _type);	// name was found in directory 
     delete directory;
     return openFile;				// return NULL if not found
 }

@@ -52,6 +52,7 @@
 
 void increasePC()
 {
+	// Di chuyển thanh ghi PC
 	int counter = machine->ReadRegister(PCReg);
 	machine->WriteRegister(PrevPCReg, counter);
 	counter = machine->ReadRegister(NextPCReg);
@@ -100,7 +101,7 @@ int System2User(int virtAddr,int len,char* buffer)
 
 void ExceptionHandler(ExceptionType which)
 {
-    	int type = machine->ReadRegister(2);
+    int syscallType = machine->ReadRegister(2);
 
 	switch (which) 
 	{
@@ -108,7 +109,7 @@ void ExceptionHandler(ExceptionType which)
 		return;
 
 	case SyscallException:
-		switch (type)
+		switch (syscallType)
 		{
 		case SC_Halt:
 			DEBUG('a',"\n Shutdown++ initiated by user program.");
@@ -117,7 +118,6 @@ void ExceptionHandler(ExceptionType which)
 			break;
 
 		case SC_Create:
-			{
 			int virtAddr;
 			char* filename;
 			DEBUG('a',"\n SC_Create call ...");
@@ -125,13 +125,12 @@ void ExceptionHandler(ExceptionType which)
 			// Lấy tham số tên tập tin từ thanh ghi r4
 			virtAddr = machine->ReadRegister(4);
 			DEBUG ('a',"\n Reading filename.");
-			filename = User2System(virtAddr,MaxFileLength+1);
+			filename = User2System(virtAddr, MaxFileLength + 1);
 			if (filename == NULL)
 			{
 				printf("\n Not enough memory in system");
 				DEBUG('a',"\n Not enough memory in system");
-				machine->WriteRegister(2,-1); // trả về lỗi cho chương
-				// trình người dùng
+				machine->WriteRegister(2,-1); // trả về lỗi cho chương trình người dùng
 				delete filename;
 				return;
 			}
@@ -154,7 +153,81 @@ void ExceptionHandler(ExceptionType which)
 			increasePC();
 			delete filename;
 			break;
+
+		case SC_Open:
+			// Đọc tham số thứ 1 từ thanh ghi r4
+			int virtAddr = machine->ReadRegister(4);
+			// Đọc tham số thứ 2 từ thanh ghi r5
+			int type = machine->ReadRegister(5);
+			// 0: đọc và ghi
+			// 1: chỉ đọc
+			// 2: console input
+			// 3: console output
+			if(type < 0 || type > 4)
+			{
+				machine->WriteRegister(2, -1);
+				printf("\n Tham so type sai quy dinh");
+				return;
 			}
+			char* filename;
+			// Đọc tên file từ địa chỉa thanh ghi r4
+			filename = User2System(virtAddr, MaxFileLength + 1);
+			// Tìm ô còn trống
+			int freeSlot = -1;
+			for(int i = 2; i < 10; i++)
+			{
+				if(fileSystem->table[i] != NULL)
+				{
+					freeSlot = i;
+					break;
+				}
+			}
+			if(freeSlot != -1)
+			{
+				// Mở file đọc và ghi; và file chỉ đọc
+				if(type == 0 || type == 1)
+				{
+					fileSystem->table[freeSlot] = fileSystem->Open(filename, type);
+					if(fileSystem->table[freeSlot] != NULL)
+						machine->WriteRegister(2, freeSlot);	// ghi OpenFileID vào thanh ghi r2
+				}
+				else if(type == 2)	// mở file console input
+				{
+					fileSystem->table[0] = fileSystem->Open("stdin", 2);
+					machine->WriteRegister(2, 0);
+				}
+				// Mở file console output
+				else
+				{
+					fileSystem->table[1] = fileSystem->Open("stdout", 3);
+					machine->WriteRegister(2, 1);
+				}
+			}
+			else
+				machine->WriteRegister(2, -1);
+			delete[] filename
+			increasePC();
+			break;
+
+		case SC_Close:
+			// lấy file id từ thanh ghi r4
+			int fileID = machine->ReadRegister(4);
+			if(fileID >= 0 && fileID <= 9)
+			{
+				if(fileSystem->table[fileID] != NULL)
+				{
+					delete fileSystem->table[fileID];
+					fileSystem->table[fileID] = NULL;
+					machine->WriteRegister(2, 0);
+				}
+			}
+			else
+			{
+				machine->WriteRegister(2, -1);
+			}
+			increasePC();
+			break;
+
 		default:
 			printf("\n Unexpected user mode exception (%d %d)", which,type);
 			interrupt->Halt();
