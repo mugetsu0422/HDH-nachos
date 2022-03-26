@@ -109,342 +109,344 @@ void ExceptionHandler(ExceptionType which)
 	case SyscallException:
 		switch (syscallType)
 		{
-		case SC_Halt:
-			DEBUG('a',"\n Shutdown++ initiated by user program.");
-			printf ("\n\n Shutdown__ initiated by user program.");
-			interrupt->Halt();
-			break;
+			case SC_Halt:
+				DEBUG('a',"\n Shutdown++ initiated by user program.");
+				printf ("\n\n Shutdown__ initiated by user program.");
+				interrupt->Halt();
+				break;
 
-		case SC_Create:
-		{
-			int virtAddr;
-			char* filename;
-			DEBUG('a',"\n SC_Create call ...");
-			DEBUG('a',"\n Reading virtual address of filename");
-			// Lấy tham số tên tập tin từ thanh ghi r4
-			virtAddr = machine->ReadRegister(4);
-			DEBUG ('a',"\n Reading filename.");
-			filename = User2System(virtAddr, MaxFileLength);
-			if (filename == NULL)
+			case SC_Create:
 			{
-				printf("\n Not enough memory in system");
-				DEBUG('a',"\n Not enough memory in system");
-				machine->WriteRegister(2, -1); // trả về lỗi cho chương trình người dùng
-				delete[] filename;
-				break;
-			}
-			DEBUG('a',"\n Finish reading filename.");
-			//DEBUG(‘a’,"\n File name : '"<<filename<<"'");
-			// Create file with size = 0
-			// Dùng đối tượng fileSystem của lớp OpenFile để tạo file,
-			// việc tạo file này là sử dụng các thủ tục tạo file của hệ điều
-			// hành Linux, chúng ta không quản ly trực tiếp các block trên
-			// đĩa cứng cấp phát cho file, việc quản ly các block của file
-			// trên ổ đĩa là một đồ án khác
-			if (!fileSystem->Create(filename, 0))
-			{
-				printf("\n Error create file '%s'",filename);
-				machine->WriteRegister(2, -1);
-				delete[] filename;
-				break;
-			}
-			machine->WriteRegister(2,0); // trả về cho chương trình người dùng thành công
-			delete[] filename;
-			break;
-		}
-
-		case SC_Open:
-		{
-			// OpenFileId Open(char *name, int type);
-			// Đọc tham số thứ 1 từ thanh ghi r4
-			int virtAddr = machine->ReadRegister(4);
-			// Đọc tham số thứ 2 từ thanh ghi r5
-			int type = machine->ReadRegister(5);
-			// 0: đọc và ghi
-			// 1: chỉ đọc
-			// 2: console input
-			// 3: console output
-			if(type < 0 || type > 4)
-			{
-				machine->WriteRegister(2, -1);
-				printf("\n Tham so type sai quy dinh");
-				break;
-			}
-			char* filename;
-			// Đọc tên file từ địa chỉa thanh ghi r4
-			filename = User2System(virtAddr, MaxFileLength);
-			// Tìm ô còn trống
-			int freeSlot = -1;
-			for(int i = 2; i < 10; i++)
-			{
-				if(fileSystem->table[i] != NULL)
+				int virtAddr;
+				char* filename;
+				DEBUG('a',"\n SC_Create call ...");
+				DEBUG('a',"\n Reading virtual address of filename");
+				// Lấy tham số tên tập tin từ thanh ghi r4
+				virtAddr = machine->ReadRegister(4);
+				DEBUG ('a',"\n Reading filename.");
+				filename = User2System(virtAddr, MaxFileLength);
+				if (filename == NULL)
 				{
-					freeSlot = i;
+					printf("\n Not enough memory in system");
+					DEBUG('a',"\n Not enough memory in system");
+					machine->WriteRegister(2, -1); // trả về lỗi cho chương trình người dùng
+					delete[] filename;
 					break;
 				}
-			}
-			if(freeSlot != -1)
-			{
-				// Mở file đọc và ghi; và file chỉ đọc
-				if(type == 0 || type == 1)
+				DEBUG('a',"\n Finish reading filename.");
+				//DEBUG(‘a’,"\n File name : '"<<filename<<"'");
+				// Create file with size = 0
+				// Dùng đối tượng fileSystem của lớp OpenFile để tạo file,
+				// việc tạo file này là sử dụng các thủ tục tạo file của hệ điều
+				// hành Linux, chúng ta không quản ly trực tiếp các block trên
+				// đĩa cứng cấp phát cho file, việc quản ly các block của file
+				// trên ổ đĩa là một đồ án khác
+				if (!fileSystem->Create(filename, 0))
 				{
-					fileSystem->table[freeSlot] = fileSystem->Open(filename, type);
-					if(fileSystem->table[freeSlot] != NULL)
-						machine->WriteRegister(2, freeSlot);	// ghi OpenFileID vào thanh ghi r2
-					else
+					printf("\n Error create file '%s'",filename);
+					machine->WriteRegister(2, -1);
+					delete[] filename;
+					break;
+				}
+				machine->WriteRegister(2,0); // trả về cho chương trình người dùng thành công
+				delete[] filename;
+				break;
+			}
+
+			case SC_Open:
+			{
+				// OpenFileId Open(char *name, int type);
+				// Đọc tham số thứ 1 từ thanh ghi r4
+				int virtAddr = machine->ReadRegister(4);
+				// Đọc tham số thứ 2 từ thanh ghi r5
+				int type = machine->ReadRegister(5);
+				// 0: đọc và ghi
+				// 1: chỉ đọc
+				// 2: console input
+				// 3: console output
+				if(type < 0 || type > 4)
+				{
+					machine->WriteRegister(2, -1);
+					printf("\n Tham so type sai quy dinh");
+					break;
+				}
+				char* filename;
+				// Đọc tên file từ địa chỉa thanh ghi r4
+				filename = User2System(virtAddr, MaxFileLength);
+				// Tìm ô còn trống
+				int freeSlot = -1;
+				for(int i = 2; i < 10; i++)
+				{
+					if(fileSystem->table[i] != NULL)
 					{
-						printf("\nFile khong ton tai");
-						machine->WriteRegister(2, -1);
+						freeSlot = i;
+						break;
 					}
 				}
-				// mở file console input
-				else if(type == 2)	
+				if(freeSlot != -1)
 				{
-					machine->WriteRegister(2, 0);
+					// Mở file đọc và ghi; và file chỉ đọc
+					if(type == 0 || type == 1)
+					{
+						fileSystem->table[freeSlot] = fileSystem->Open(filename, type);
+						if(fileSystem->table[freeSlot] != NULL)
+							machine->WriteRegister(2, freeSlot);	// ghi OpenFileID vào thanh ghi r2
+						else
+						{
+							printf("\nFile khong ton tai");
+							machine->WriteRegister(2, -1);
+						}
+					}
+					// mở file console input
+					else if(type == 2)	
+					{
+						machine->WriteRegister(2, 0);
+					}
+					// Mở file console output
+					else
+					{
+						machine->WriteRegister(2, 1);
+					}
 				}
-				// Mở file console output
 				else
+					machine->WriteRegister(2, -1);
+				delete[] filename;
+				break;
+			}
+
+			case SC_Close:
+			{
+				// int Close(OpenFileId id);
+				// lấy file id từ thanh ghi r4
+				int fileID = machine->ReadRegister(4);
+				if(fileID >= 0 && fileID <= 9)
 				{
-					machine->WriteRegister(2, 1);
-				}
-			}
-			else
-				machine->WriteRegister(2, -1);
-			delete[] filename;
-			break;
-		}
-
-		case SC_Close:
-		{
-			// int Close(OpenFileId id);
-			// lấy file id từ thanh ghi r4
-			int fileID = machine->ReadRegister(4);
-			if(fileID >= 0 && fileID <= 9)
-			{
-				if(fileSystem->table[fileID] != NULL)
-				{
-					delete fileSystem->table[fileID];
-					fileSystem->table[fileID] = NULL;
-					machine->WriteRegister(2, 0);
-				}
-			}
-			else
-			{
-				machine->WriteRegister(2, -1);
-			}
-			break;
-		}
-
-		case SC_Read:
-		{
-			// int Read(char *buffer, int charcount, OpenFileId id);
-			int virtAddr = machine->ReadRegister(4);
-			int charcount = machine->ReadRegister(5);
-			int fileID = machine->ReadRegister(6);
-			char* buffer;
-
-			if(fileID < 0 || fileID > 9)
-			{
-				printf("\n FileID phai nam trong doan [0, 9]");
-				machine->WriteRegister(2, -1);
-				break;
-			}
-
-			if(fileSystem->table[fileID] == NULL)
-			{
-				printf("\n File khong ton tai");
-				machine->WriteRegister(2, -1);
-				break;
-			}
-
-			buffer = User2System(virtAddr, charcount);
-			// Console input
-			if(fileID == 0)
-			{
-				// Dùng hàm Read của SynchConsole để đọc từ console output
-				int n = gSynchConsole->Read(buffer, charcount);
-				// Nếu đọc đến cuối file
-				// Chuyển chuỗi đọc được từ console output sang cho user
-				System2User(virtAddr, n, buffer);
-				machine->WriteRegister(2, n);
-				delete[] buffer;
-				}
-				break;
-			}
-			// Console output
-			else if(fileID == 1)
-			{
-				printf("\n Khong the doc console output");
-				machine->WriteRegister(2, -1);
-				break;
-			}
-			// File bình thường
-			else
-			{
-				int n = fileSystem->table[fileID]->Read(buffer, charcount);
-				// Nếu đọc đến cuối file
-				if(n < charcount)
-				{
-					machine->WriteRegister(2, -2);
+					if(fileSystem->table[fileID] != NULL)
+					{
+						delete fileSystem->table[fileID];
+						fileSystem->table[fileID] = NULL;
+						machine->WriteRegister(2, 0);
+					}
 				}
 				else
 				{
+					machine->WriteRegister(2, -1);
+				}
+				break;
+			}
+
+			case SC_Read:
+			{
+				// int Read(char *buffer, int charcount, OpenFileId id);
+				int virtAddr = machine->ReadRegister(4);
+				int charcount = machine->ReadRegister(5);
+				int fileID = machine->ReadRegister(6);
+				char* buffer;
+
+				if(fileID < 0 || fileID > 9)
+				{
+					printf("\n FileID phai nam trong doan [0, 9]");
+					machine->WriteRegister(2, -1);
+					break;
+				}
+
+				if(fileSystem->table[fileID] == NULL)
+				{
+					printf("\n File khong ton tai");
+					machine->WriteRegister(2, -1);
+					break;
+				}
+
+				buffer = User2System(virtAddr, charcount);
+				// Console input
+				if(fileID == 0)
+				{
+					// Dùng hàm Read của SynchConsole để đọc từ console output
+					int n = gSynchConsole->Read(buffer, charcount);
+					// Nếu đọc đến cuối file
 					// Chuyển chuỗi đọc được từ console output sang cho user
 					System2User(virtAddr, n, buffer);
 					machine->WriteRegister(2, n);
 					delete[] buffer;
+					break;
 				}
-				break;
-			}
-		}
-
-		case SC_Write:
-		{
-			// int Write(char *buffer, int charcount, OpenFileId id);
-			int virtAddr = machine->ReadRegister(4);
-			int charcount = machine->ReadRegister(5);
-			int fileID = machine->ReadRegister(6);
-			char* buffer;
-
-			if(fileID < 0 || fileID > 9)
-			{
-				printf("\n FileID phai nam trong doan [0, 9]");
-				machine->WriteRegister(2, -1);
-				break;
-			}
-
-			if(fileSystem->table[fileID] == NULL)
-			{
-				printf("\n File khong ton tai");
-				machine->WriteRegister(2, -1);
-				break;
-			}
-
-			buffer = User2System(virtAddr, charcount);
-			// Console input
-			if(fileID == 0)
-			{
-				printf("\n Khong the viet console input");
-				machine->WriteRegister(2, -1);
-				break;
-			}
-			// Console output
-			else if(fileID == 1)
-			{
-
-				// Dùng hàm Write của SynchConsole để viết console input
-				int n = gSynchConsole->Write(buffer, charcount);
-				machine->WriteRegister(2, n);
-				delete[] buffer;
-				break;
-			}
-			// File bình thường
-			else
-			{
-				// File chỉ đọc
-				if(fileSystem->table[fileID]->type == 1)
+				// Console output
+				else if(fileID == 1)
 				{
-					printf("\n Khong the viet duoc file chi doc");
+					printf("\n Khong the doc console output");
 					machine->WriteRegister(2, -1);
+					break;
 				}
-				// File đọc và ghi
+				// File bình thường
 				else
 				{
-					int n = fileSystem->table[fileID]->Write(buffer, charcount);
+					int n = fileSystem->table[fileID]->Read(buffer, charcount);
+					// Nếu đọc đến cuối file
+					if(n < charcount)
+					{
+						machine->WriteRegister(2, -2);
+					}
+					else
+					{
+						// Chuyển chuỗi đọc được từ console output sang cho user
+						System2User(virtAddr, n, buffer);
+						machine->WriteRegister(2, n);
+						delete[] buffer;
+					}
+					break;
+				}
+			}
+
+			case SC_Write:
+			{
+				// int Write(char *buffer, int charcount, OpenFileId id);
+				int virtAddr = machine->ReadRegister(4);
+				int charcount = machine->ReadRegister(5);
+				int fileID = machine->ReadRegister(6);
+				char* buffer;
+
+				if(fileID < 0 || fileID > 9)
+				{
+					printf("\n FileID phai nam trong doan [0, 9]");
+					machine->WriteRegister(2, -1);
+					break;
+				}
+
+				if(fileSystem->table[fileID] == NULL)
+				{
+					printf("\n File khong ton tai");
+					machine->WriteRegister(2, -1);
+					break;
+				}
+
+				buffer = User2System(virtAddr, charcount);
+				// Console input
+				if(fileID == 0)
+				{
+					printf("\n Khong the viet console input");
+					machine->WriteRegister(2, -1);
+					break;
+				}
+				// Console output
+				else if(fileID == 1)
+				{
+
+					// Dùng hàm Write của SynchConsole để viết console input
+					int n = gSynchConsole->Write(buffer, charcount);
 					machine->WriteRegister(2, n);
 					delete[] buffer;
+					break;
 				}
-				break;
-			}
-		}
-
-		case SC_Seek:
-		{
-			// int Seek(int pos, OpenFileID id)
-			int pos = machine->ReadRegister(4);
-			int fileID = machine->ReadRegister(5);
-
-			if(pos < 0)
-			{
-				printf("\n pos phai lon hon 0");
-				machine->WriteRegister(2, -1);
-				break;
-			}
-
-			if(fileID < 0 || fileID > 9)
-			{
-				printf("\n FileID phai nam trong doan [0, 9]");
-				machine->WriteRegister(2, -1);
-				break;
-			}
-
-			if(fileSystem->table[fileID] == NULL)
-			{
-				printf("\n File khong ton tai");
-				machine->WriteRegister(2, -1);
-				break;
-			}
-
-			if(fileID == 0 || fileID == 1)
-			{
-				printf("\n Khong the seek tren console");
-				machine->WriteRegister(2, -1);
-			}
-			else
-			{
-				int endPos = fileSystem->table[fileID]->Length();
-				// pos = -1 hoac pos > endPos thi seek den cuoi file
-				if(pos == -1 || pos > endPos)
+				// File bình thường
+				else
 				{
-					fileSystem->table[fileID]->Seek(endPos);
-					machine->WriteRegister(2, endPos);
+					// File chỉ đọc
+					if(fileSystem->table[fileID]->type == 1)
+					{
+						printf("\n Khong the viet duoc file chi doc");
+						machine->WriteRegister(2, -1);
+					}
+					// File đọc và ghi
+					else
+					{
+						int n = fileSystem->table[fileID]->Write(buffer, charcount);
+						machine->WriteRegister(2, n);
+						delete[] buffer;
+					}
+					break;
+				}
+			}
+
+			case SC_Seek:
+			{
+				// int Seek(int pos, OpenFileID id)
+				int pos = machine->ReadRegister(4);
+				int fileID = machine->ReadRegister(5);
+
+				if(pos < 0)
+				{
+					printf("\n pos phai lon hon 0");
+					machine->WriteRegister(2, -1);
+					break;
+				}
+
+				if(fileID < 0 || fileID > 9)
+				{
+					printf("\n FileID phai nam trong doan [0, 9]");
+					machine->WriteRegister(2, -1);
+					break;
+				}
+
+				if(fileSystem->table[fileID] == NULL)
+				{
+					printf("\n File khong ton tai");
+					machine->WriteRegister(2, -1);
+					break;
+				}
+
+				if(fileID == 0 || fileID == 1)
+				{
+					printf("\n Khong the seek tren console");
+					machine->WriteRegister(2, -1);
 				}
 				else
 				{
-					fileSystem->table[fileID]->Seek(pos);
-					machine->WriteRegister(2, pos);
-				}
-			}
-			break;
-		}
-
-		case SC_Delete:
-		{
-			// int Delete(char *name);
-			int virtAddr = machine->ReadRegister(4);
-			char* name = User2System(virtAddr, MaxFileLength);
-			for(int i = 2; i < 9; i++)
-			{
-				if(fileSystem->table[i] != NULL)
-				{
-					if(fileSystem->table[i]->filename == name)
+					int endPos = fileSystem->table[fileID]->Length();
+					// pos = -1 hoac pos > endPos thi seek den cuoi file
+					if(pos == -1 || pos > endPos)
 					{
-						printf("\nFile dang mo, khong the xoa");
-						machine->WriteRegister(2, -1);
-						delete[] name;
-						break;
-						break;
+						fileSystem->table[fileID]->Seek(endPos);
+						machine->WriteRegister(2, endPos);
+					}
+					else
+					{
+						fileSystem->table[fileID]->Seek(pos);
+						machine->WriteRegister(2, pos);
 					}
 				}
+				break;
 			}
-			
-			if(fileSystem->Remove(name) == 1)
+
+			case SC_Delete:
 			{
-				printf("\nXoa file \"%s\" thanh cong", name);
-				machine->WriteRegister(2, 0);
+				// int Delete(char *name);
+				int virtAddr = machine->ReadRegister(4);
+				char* name = User2System(virtAddr, MaxFileLength);
+				for(int i = 2; i < 9; i++)
+				{
+					if(fileSystem->table[i] != NULL)
+					{
+						if(fileSystem->table[i]->filename == name)
+						{
+							printf("\nFile dang mo, khong the xoa");
+							machine->WriteRegister(2, -1);
+							delete[] name;
+							break;
+							break;
+						}
+					}
+				}
+				
+				if(fileSystem->Remove(name) == 1)
+				{
+					printf("\nXoa file \"%s\" thanh cong", name);
+					machine->WriteRegister(2, 0);
+				}
+				else
+				{
+					printf("\nKhong ton tai file \"%s\"", name);
+					machine->WriteRegister(2, -1);
+				}
+				delete[] name;
+				break;
 			}
-			else
-			{
-				printf("\nKhong ton tai file \"%s\"", name);
-				machine->WriteRegister(2, -1);
-			}
-			delete[] name;
-			break;
+
+			default:
+				break;
+			// printf("\n Unexpected user mode exception (%d %d)", which, syscallType);
+			// interrupt->Halt();
 		}
 		break;
-		// default:
-		// 	printf("\n Unexpected user mode exception (%d %d)", which, syscallType);
-		// 	interrupt->Halt();
 	}
 	increasePC();
 }
