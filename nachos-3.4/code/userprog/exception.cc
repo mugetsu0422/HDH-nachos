@@ -130,9 +130,9 @@ void ExceptionHandler(ExceptionType which)
 			{
 				printf("\n Not enough memory in system");
 				DEBUG('a',"\n Not enough memory in system");
-				machine->WriteRegister(2,-1); // trả về lỗi cho chương trình người dùng
+				machine->WriteRegister(2, -1); // trả về lỗi cho chương trình người dùng
 				delete filename;
-				return;
+				break;
 			}
 			DEBUG('a',"\n Finish reading filename.");
 			//DEBUG(‘a’,"\n File name : '"<<filename<<"'");
@@ -145,9 +145,9 @@ void ExceptionHandler(ExceptionType which)
 			if (!fileSystem->Create(filename,0))
 			{
 				printf("\n Error create file '%s'",filename);
-				machine->WriteRegister(2,-1);
+				machine->WriteRegister(2, -1);
 				delete filename;
-				return;
+				break;
 			}
 			machine->WriteRegister(2,0); // trả về cho chương trình người dùng thành công
 			increasePC();
@@ -155,6 +155,7 @@ void ExceptionHandler(ExceptionType which)
 			break;
 
 		case SC_Open:
+			// OpenFileId Open(char *name, int type);
 			// Đọc tham số thứ 1 từ thanh ghi r4
 			int virtAddr = machine->ReadRegister(4);
 			// Đọc tham số thứ 2 từ thanh ghi r5
@@ -167,7 +168,7 @@ void ExceptionHandler(ExceptionType which)
 			{
 				machine->WriteRegister(2, -1);
 				printf("\n Tham so type sai quy dinh");
-				return;
+				break;
 			}
 			char* filename;
 			// Đọc tên file từ địa chỉa thanh ghi r4
@@ -193,23 +194,21 @@ void ExceptionHandler(ExceptionType which)
 				}
 				else if(type == 2)	// mở file console input
 				{
-					fileSystem->table[0] = fileSystem->Open("stdin", 2);
 					machine->WriteRegister(2, 0);
 				}
 				// Mở file console output
 				else
 				{
-					fileSystem->table[1] = fileSystem->Open("stdout", 3);
 					machine->WriteRegister(2, 1);
 				}
 			}
 			else
 				machine->WriteRegister(2, -1);
-			delete[] filename
-			increasePC();
+			delete[] filename;
 			break;
 
 		case SC_Close:
+			// int Close(OpenFileId id);
 			// lấy file id từ thanh ghi r4
 			int fileID = machine->ReadRegister(4);
 			if(fileID >= 0 && fileID <= 9)
@@ -225,8 +224,130 @@ void ExceptionHandler(ExceptionType which)
 			{
 				machine->WriteRegister(2, -1);
 			}
-			increasePC();
 			break;
+
+		case SC_Read:
+			// int Read(char *buffer, int charcount, OpenFileId id);
+			int virtAddr = machine->ReadRegister(4);
+			int charcount = machine->ReadRegister(5);
+			int fileID = machine->ReadRegister(6);
+			char* buffer;
+
+			if(fileID < 0 || fileID > 9)
+			{
+				printf("\n FileID phai nam trong doan [0, 9]");
+				machine->WriteRegister(2, -1);
+				break;
+			}
+
+			if(fileSystem->table[fileID] == NULL)
+			{
+				printf("\n File khong ton tai");
+				machine->WriteRegister(2, -1);
+				break;
+			}
+
+			// Console input
+			if(fileID == 0)
+			{
+				printf("\n Khong the doc console input");
+				machine->WriteRegister(2, -1);
+				break;
+			}
+			// Console output
+			else if(fileID == 1)
+			{
+				// Dùng hàm Read của SynchConsole để đọc từ console output
+				int n = gSynchConsole->Read(buffer, charcount);
+				// Nếu đọc đến cuối file
+				if(n < charcount)
+				{
+					machine->WriteRegister(2, -2);
+				}
+				else
+				{
+					// Chuyển chuỗi đọc được từ console output sang cho user
+					System2User(virtAddr, n, buffer);
+					machine->WriteRegister(2, n);
+					delete buffer;
+				}
+				break;
+			}
+			// File bình thường
+			else
+			{
+				int n = fileSystem->table[fileID]->Read(buffer, charcount);
+				// Nếu đọc đến cuối file
+				if(n < charcount)
+				{
+					machine->WriteRegister(2, -2);
+				}
+				else
+				{
+					// Chuyển chuỗi đọc được từ console output sang cho user
+					System2User(virtAddr, n, buffer);
+					machine->WriteRegister(2, n);
+					delete buffer;
+				}
+				break;
+			}
+
+		case SC_Write:
+			// int Write(char *buffer, int charcount, OpenFileId id);
+			int virtAddr = machine->ReadRegister(4);
+			int charcount = machine->ReadRegister(5);
+			int fileID = machine->ReadRegister(6);
+			char* buffer;
+			buffer = User2System(virtAddr, charcount);
+
+			if(fileID < 0 || fileID > 9)
+			{
+				printf("\n FileID phai nam trong doan [0, 9]");
+				machine->WriteRegister(2, -1);
+				break;
+			}
+
+			if(fileSystem->table[fileID] == NULL)
+			{
+				printf("\n File khong ton tai");
+				machine->WriteRegister(2, -1);
+				break;
+			}
+
+			// Console input
+			if(fileID == 0)
+			{
+				// Dùng hàm Write của SynchConsole để viết console input
+				int n = gSynchConsole->Write(buffer, charcount);
+				machine->WriteRegister(2, n);
+				delete buffer;
+				break;
+			}
+			// Console output
+			else if(fileID == 1)
+			{
+				printf("\n Khong the viet console output");
+				machine->WriteRegister(2, -1);
+				break;
+			}
+			// File bình thường
+			else
+			{
+				// File chỉ đọc
+				if(fileSystem->table[fileID]->type == 1)
+				{
+					printf("\n Khong the viet duoc file chi doc");
+					machine->WriteRegister(2, -1);
+				}
+				// File đọc và ghi
+				else
+				{
+					int n = fileSystem->table[fileID]->Write(buffer, charcount);
+					machine->WriteRegister(2, n);
+					delete buffer;
+				}
+				break;
+			}
 
 		default:
 			printf("\n Unexpected user mode exception (%d %d)", which,type);
@@ -236,5 +357,5 @@ void ExceptionHandler(ExceptionType which)
 		break;
 		
 	}
-
+	increasePC();
 }
