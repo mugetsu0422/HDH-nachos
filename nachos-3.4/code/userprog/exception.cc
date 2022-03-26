@@ -349,6 +349,54 @@ void ExceptionHandler(ExceptionType which)
 				break;
 			}
 
+		case SC_Seek:
+			// int Seek(int pos, OpenFileID id)
+			int pos = machine->ReadRegister(4);
+			int fileID = machine->ReadRegister(5);
+
+			if(pos < 0)
+			{
+				printf("\n pos phai lon hon 0");
+				machine->WriteRegister(2, -1);
+				break;
+			}
+
+			if(fileID < 0 || fileID > 9)
+			{
+				printf("\n FileID phai nam trong doan [0, 9]");
+				machine->WriteRegister(2, -1);
+				break;
+			}
+
+			if(fileSystem->table[fileID] == NULL)
+			{
+				printf("\n File khong ton tai");
+				machine->WriteRegister(2, -1);
+				break;
+			}
+
+			if(fileID == 0 || fileID == 1)
+			{
+				printf("\n Khong the seek tren console");
+				machine->WriteRegister(2, -1);
+			}
+			else
+			{
+				int endPos = fileSystem->table[fileID]->Length();
+				// pos = -1 hoac pos > endPos thi seek den cuoi file
+				if(pos == -1 || pos > endPos)
+				{
+					fileSystem->table[fileID]->Seek(endPos);
+					machine->WriteRegister(2, endPos);
+				}
+				else
+				{
+					fileSystem->table[fileID]->Seek(pos);
+					machine->WriteRegister(2, pos);
+				}
+			}
+			break;
+
 		default:
 			printf("\n Unexpected user mode exception (%d %d)", which,type);
 			interrupt->Halt();

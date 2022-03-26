@@ -29,6 +29,7 @@
 #define SC_Close	8
 #define SC_Fork		9
 #define SC_Yield	10
+#define SC_Seek     11
 
 
 
@@ -78,7 +79,7 @@ int Join(SpaceId id);
  */
  
 /* A unique identifier for an open Nachos file. */
-typedef int OpenFileId;	
+typedef int OpenFileID;	
 
 /* when an address space starts up, it has two open files, representing 
  * keyboard input and display output (in UNIX terms, stdin and stdout).
@@ -92,13 +93,13 @@ typedef int OpenFileId;
 /* Create a Nachos file, with "name" */
 int Create(char *name);
 
-/* Open the Nachos file "name", and return an "OpenFileId" that can 
+/* Open the Nachos file "name", and return an "OpenFileID" that can 
  * be used to read and write to the file.
  */
-OpenFileId Open(char *name, int type);
+OpenFileID Open(char *name, int type);
 
 /* Write "size" bytes from "buffer" to the open file. */
-int Write(char *buffer, int charcount, OpenFileId id);
+int Write(char *buffer, int charcount, OpenFileID id);
 
 /* Read "size" bytes from the open file into "buffer".  
  * Return the number of bytes actually read -- if the open file isn't
@@ -106,10 +107,10 @@ int Write(char *buffer, int charcount, OpenFileId id);
  * characters to read, return whatever is available (for I/O devices, 
  * you should always wait until you can return at least one character).
  */
-int Read(char *buffer, int charcount, OpenFileId id);
+int Read(char *buffer, int charcount, OpenFileID id);
 
 /* Close the file, we're done reading and writing to it. */
-void Close(OpenFileId id);
+void Close(OpenFileID id);
 
 
 
@@ -126,6 +127,11 @@ void Fork(void (*func)());
  * or not. 
  */
 void Yield();		
+
+// Seek sẽ phải chuyển con trỏ tới vị
+// trí thích hợp. pos lưu vị trí cần chuyển tới, nếu pos = -1 thì di chuyển đến cuối file. Trả về vị trí
+// thực sự trong file nếu thành công và -1 nếu bị lỗi.
+int Seek(int pos, OpenFileID id)
 
 #endif /* IN_ASM */
 
