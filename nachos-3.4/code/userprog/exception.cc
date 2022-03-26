@@ -326,9 +326,9 @@ void ExceptionHandler(ExceptionType which)
 					{
 						// Chuyển chuỗi đọc được từ console output sang cho user
 						System2User(virtAddr, n, buffer);
+					}
 						machine->WriteRegister(2, n);
 						delete[] buffer;
-					}
 					break;
 				}
 			}

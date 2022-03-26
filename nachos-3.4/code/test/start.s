@@ -131,6 +131,22 @@ Yield:
 	j	$31
 	.end Yield
 
+	.globl Yield
+	.ent	Yield
+Seek:
+	addiu $2,$0,SC_Seek
+	syscall
+	j	$31
+	.end Yield
+
+	.globl Yield
+	.ent	Yield
+Delete:
+	addiu $2,$0,SC_Delete
+	syscall
+	j	$31
+	.end Yield
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
