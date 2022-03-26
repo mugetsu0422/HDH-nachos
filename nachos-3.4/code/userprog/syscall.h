@@ -30,6 +30,7 @@
 #define SC_Fork		9
 #define SC_Yield	10
 #define SC_Seek     11
+#define SC_Delete   12
 
 
 
@@ -132,6 +133,9 @@ void Yield();
 // trí thích hợp. pos lưu vị trí cần chuyển tới, nếu pos = -1 thì di chuyển đến cuối file. Trả về vị trí
 // thực sự trong file nếu thành công và -1 nếu bị lỗi.
 int Seek(int pos, OpenFileID id)
+
+// Xóa file
+int Delete(char *name)
 
 #endif /* IN_ASM */
 

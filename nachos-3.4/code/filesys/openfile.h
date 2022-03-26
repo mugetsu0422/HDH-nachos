@@ -33,10 +33,14 @@ class OpenFile {
 	// 1: chỉ đọc
 	// 2: console input
 	// 3: console output
+	
+	char* filename = NULL;
+
     OpenFile(int f) { file = f; currentOffset = 0; }	// open the file
-	// Thêm hàm
-	OpenFile(int f, int _type) { file = f; currentOffset = 0;, type = _type; }
-    ~OpenFile() { Close(file); }			// close the file
+	// Overload constructor với tham số mới là filename
+	OpenFile(int f, int _type, char* _filename) 
+	{ file = f; currentOffset = 0;, type = _type; filename = _strdup(_filename); } 
+    ~OpenFile() { Close(file); if(filename != NULL) delete[] filename;}			// close the file
 
     int ReadAt(char *into, int numBytes, int position) { 
     		Lseek(file, position, 0); 
@@ -75,9 +79,12 @@ class OpenFile {
 	// 1: chỉ đọc
 	// 2: console input
 	// 3: console output
+
+	char* filename = NULL;
+
     OpenFile(int sector);		// Open a file whose header is located
 								// at "sector" on the disk
-	OpenFile(int sector, int _type);
+	OpenFile(int sector, int _type, char* _filename);
     ~OpenFile();				// Close the file
 
     void Seek(int position); 		// Set the position from which to 
@@ -95,9 +102,9 @@ class OpenFile {
     int WriteAt(char *from, int numBytes, int position);
 
     int Length(); 			// Return the number of bytes in the
-					// file (this interface is simpler 
-					// than the UNIX idiom -- lseek to 
-					// end of file, tell, lseek back 
+							// file (this interface is simpler 
+							// than the UNIX idiom -- lseek to 
+							// end of file, tell, lseek back 
     
   private:
     FileHeader *hdr;			// Header for this file 

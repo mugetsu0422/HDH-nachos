@@ -60,18 +60,18 @@ void increasePC()
 	machine->WriteRegister(NextPCReg, counter + 4);
 }
 
-char* User2System(int virtAddr,int limit)
+char* User2System(int virtAddr, int limit)
 {
 	int i;// index
 	int oneChar;
 	char* kernelBuf = NULL;
-	kernelBuf = new char[limit +1];//need for terminal string
+	kernelBuf = new char[limit + 1];//need for terminal string
 	if (kernelBuf == NULL)
 		return kernelBuf;
-	memset(kernelBuf,0,limit+1);
+	memset(kernelBuf, 0, limit + 1);
 	//printf("\n Filename u2s:");
 	for (i = 0 ; i < limit ;i++){
-		machine->ReadMem(virtAddr+i,1,&oneChar);
+		machine->ReadMem(virtAddr + i, 1, &oneChar);
 		kernelBuf[i] = (char)oneChar;
 		//printf("%c",kernelBuf[i]);
 		if (oneChar == 0)
@@ -80,9 +80,7 @@ char* User2System(int virtAddr,int limit)
 	return kernelBuf;
 }
 
-
-
-int System2User(int virtAddr,int len,char* buffer)
+int System2User(int virtAddr, int len, char* buffer)
 {
 	if (len < 0) return -1;
 	if (len == 0)return len;
@@ -90,8 +88,8 @@ int System2User(int virtAddr,int len,char* buffer)
 	int oneChar = 0 ;
 	do{
 		oneChar= (int) buffer[i];
-		machine->WriteMem(virtAddr+i,1,oneChar);
-		i ++;
+		machine->WriteMem(virtAddr + i, 1, oneChar);
+		i++;
 	}while(i < len && oneChar != 0);
 	return i;
 }
@@ -125,13 +123,13 @@ void ExceptionHandler(ExceptionType which)
 			// Lấy tham số tên tập tin từ thanh ghi r4
 			virtAddr = machine->ReadRegister(4);
 			DEBUG ('a',"\n Reading filename.");
-			filename = User2System(virtAddr, MaxFileLength + 1);
+			filename = User2System(virtAddr, MaxFileLength);
 			if (filename == NULL)
 			{
 				printf("\n Not enough memory in system");
 				DEBUG('a',"\n Not enough memory in system");
 				machine->WriteRegister(2, -1); // trả về lỗi cho chương trình người dùng
-				delete filename;
+				delete[] filename;
 				break;
 			}
 			DEBUG('a',"\n Finish reading filename.");
@@ -142,16 +140,16 @@ void ExceptionHandler(ExceptionType which)
 			// hành Linux, chúng ta không quản ly trực tiếp các block trên
 			// đĩa cứng cấp phát cho file, việc quản ly các block của file
 			// trên ổ đĩa là một đồ án khác
-			if (!fileSystem->Create(filename,0))
+			if (!fileSystem->Create(filename, 0))
 			{
 				printf("\n Error create file '%s'",filename);
 				machine->WriteRegister(2, -1);
-				delete filename;
+				delete[] filename;
 				break;
 			}
 			machine->WriteRegister(2,0); // trả về cho chương trình người dùng thành công
 			increasePC();
-			delete filename;
+			delete[] filename;
 			break;
 
 		case SC_Open:
@@ -172,7 +170,7 @@ void ExceptionHandler(ExceptionType which)
 			}
 			char* filename;
 			// Đọc tên file từ địa chỉa thanh ghi r4
-			filename = User2System(virtAddr, MaxFileLength + 1);
+			filename = User2System(virtAddr, MaxFileLength);
 			// Tìm ô còn trống
 			int freeSlot = -1;
 			for(int i = 2; i < 10; i++)
@@ -191,8 +189,14 @@ void ExceptionHandler(ExceptionType which)
 					fileSystem->table[freeSlot] = fileSystem->Open(filename, type);
 					if(fileSystem->table[freeSlot] != NULL)
 						machine->WriteRegister(2, freeSlot);	// ghi OpenFileID vào thanh ghi r2
+					else
+					{
+						printf("\nFile khong ton tai");
+						machine->WriteRegister(2, -1);
+					}
 				}
-				else if(type == 2)	// mở file console input
+				// mở file console input
+				else if(type == 2)	
 				{
 					machine->WriteRegister(2, 0);
 				}
@@ -269,7 +273,7 @@ void ExceptionHandler(ExceptionType which)
 					// Chuyển chuỗi đọc được từ console output sang cho user
 					System2User(virtAddr, n, buffer);
 					machine->WriteRegister(2, n);
-					delete buffer;
+					delete[] buffer;
 				}
 				break;
 			}
@@ -287,7 +291,7 @@ void ExceptionHandler(ExceptionType which)
 					// Chuyển chuỗi đọc được từ console output sang cho user
 					System2User(virtAddr, n, buffer);
 					machine->WriteRegister(2, n);
-					delete buffer;
+					delete[] buffer;
 				}
 				break;
 			}
@@ -320,7 +324,7 @@ void ExceptionHandler(ExceptionType which)
 				// Dùng hàm Write của SynchConsole để viết console input
 				int n = gSynchConsole->Write(buffer, charcount);
 				machine->WriteRegister(2, n);
-				delete buffer;
+				delete[] buffer;
 				break;
 			}
 			// Console output
@@ -344,7 +348,7 @@ void ExceptionHandler(ExceptionType which)
 				{
 					int n = fileSystem->table[fileID]->Write(buffer, charcount);
 					machine->WriteRegister(2, n);
-					delete buffer;
+					delete[] buffer;
 				}
 				break;
 			}
@@ -394,6 +398,35 @@ void ExceptionHandler(ExceptionType which)
 					fileSystem->table[fileID]->Seek(pos);
 					machine->WriteRegister(2, pos);
 				}
+			}
+			break;
+
+		case SC_Delete:
+			// int Delete(char *name);
+			int virtAddr = machine->ReadRegister(4);
+			char* name = User2System(virtAddr, MaxFileLength);
+			for(int i = 2; i < 9; i++)
+			{
+				if(fileSystem->table[i] != NULL)
+				{
+					if(fileSystem->table[i]->filename == name)
+					{
+						printf("\nFile dang mo, khong the xoa");
+						machine->WriteRegister(2, -1);
+						break;
+						break;
+					}
+				}
+			}
+			if(fileSystem->Remove(name) == 1)
+			{
+				printf("\nXoa file \"%s\" thanh cong", name);
+				machine->WriteRegister(2, 0);
+			}
+			else
+			{
+				printf("\nKhong ton tai file \"%s\"", name);
+				machine->WriteRegister(2, -1);
 			}
 			break;
 

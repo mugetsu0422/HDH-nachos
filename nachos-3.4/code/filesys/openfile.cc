@@ -35,12 +35,13 @@ OpenFile::OpenFile(int sector)
 }
 
 // Hàm thêm
-OpenFile::OpenFile(int sector, int _type)
+OpenFile::OpenFile(int sector, int _type, char* _filename)
 { 
     hdr = new FileHeader;
     hdr->FetchFrom(sector);
     seekPosition = 0;
     type = _type;
+    filename = _strdup(_filename);
 }
 
 //----------------------------------------------------------------------
@@ -51,6 +52,8 @@ OpenFile::OpenFile(int sector, int _type)
 OpenFile::~OpenFile()
 {
     delete hdr;
+    if(filename != NULL)
+        delete[] filename;
 }
 
 //----------------------------------------------------------------------
