@@ -116,6 +116,7 @@ void ExceptionHandler(ExceptionType which)
 			break;
 
 		case SC_Create:
+		{
 			int virtAddr;
 			char* filename;
 			DEBUG('a',"\n SC_Create call ...");
@@ -148,11 +149,12 @@ void ExceptionHandler(ExceptionType which)
 				break;
 			}
 			machine->WriteRegister(2,0); // trả về cho chương trình người dùng thành công
-			increasePC();
 			delete[] filename;
 			break;
+		}
 
 		case SC_Open:
+		{
 			// OpenFileId Open(char *name, int type);
 			// Đọc tham số thứ 1 từ thanh ghi r4
 			int virtAddr = machine->ReadRegister(4);
@@ -210,8 +212,10 @@ void ExceptionHandler(ExceptionType which)
 				machine->WriteRegister(2, -1);
 			delete[] filename;
 			break;
+		}
 
 		case SC_Close:
+		{
 			// int Close(OpenFileId id);
 			// lấy file id từ thanh ghi r4
 			int fileID = machine->ReadRegister(4);
@@ -229,8 +233,10 @@ void ExceptionHandler(ExceptionType which)
 				machine->WriteRegister(2, -1);
 			}
 			break;
+		}
 
 		case SC_Read:
+		{
 			// int Read(char *buffer, int charcount, OpenFileId id);
 			int virtAddr = machine->ReadRegister(4);
 			int charcount = machine->ReadRegister(5);
@@ -295,8 +301,10 @@ void ExceptionHandler(ExceptionType which)
 				}
 				break;
 			}
+		}
 
 		case SC_Write:
+		{
 			// int Write(char *buffer, int charcount, OpenFileId id);
 			int virtAddr = machine->ReadRegister(4);
 			int charcount = machine->ReadRegister(5);
@@ -352,8 +360,10 @@ void ExceptionHandler(ExceptionType which)
 				}
 				break;
 			}
+		}
 
 		case SC_Seek:
+		{
 			// int Seek(int pos, OpenFileID id)
 			int pos = machine->ReadRegister(4);
 			int fileID = machine->ReadRegister(5);
@@ -400,8 +410,10 @@ void ExceptionHandler(ExceptionType which)
 				}
 			}
 			break;
+		}
 
 		case SC_Delete:
+		{
 			// int Delete(char *name);
 			int virtAddr = machine->ReadRegister(4);
 			char* name = User2System(virtAddr, MaxFileLength);
@@ -429,9 +441,10 @@ void ExceptionHandler(ExceptionType which)
 				machine->WriteRegister(2, -1);
 			}
 			break;
+		}
 
 		default:
-			printf("\n Unexpected user mode exception (%d %d)", which,type);
+			printf("\n Unexpected user mode exception (%d %d)", which, syscallType);
 			interrupt->Halt();
 		}
 	default:
