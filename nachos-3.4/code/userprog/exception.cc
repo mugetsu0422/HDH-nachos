@@ -72,7 +72,7 @@ char* User2System(int virtAddr, int limit)
 	if (kernelBuf == NULL)
 		return kernelBuf;
 	memset(kernelBuf, 0, limit + 1);
-	//printf("\n Filename u2s:");
+	//printf("\nFilename u2s:");
 	for (i = 0 ; i < limit ;i++){
 		machine->ReadMem(virtAddr + i, 1, &oneChar);
 		kernelBuf[i] = (char)oneChar;
@@ -185,7 +185,7 @@ void ExceptionHandler(ExceptionType which)
 				// trên ổ đĩa là một đồ án khác
 				if (!fileSystem->Create(filename, 0))
 				{
-					printf("\n Error create file '%s'",filename);
+					printf("\nError create file '%s'",filename);
 					machine->WriteRegister(2, -1);
 					delete[] filename;
 					break;
@@ -209,7 +209,7 @@ void ExceptionHandler(ExceptionType which)
 				if(type < 0 || type > 2)
 				{
 					machine->WriteRegister(2, -1);
-					printf("\n Tham so type sai quy dinh");
+					printf("\nTham so type sai quy dinh");
 					break;
 				}
 				char* filename;
@@ -281,14 +281,14 @@ void ExceptionHandler(ExceptionType which)
 
 				if(fileID < 0 || fileID > 9)
 				{
-					printf("\n FileID phai nam trong doan [0, 9]");
+					printf("\nFileID phai nam trong doan [0, 9]");
 					machine->WriteRegister(2, -1);
 					break;
 				}
 
 				if(fileSystem->table[fileID] == NULL && fileID > 1)
 				{
-					printf("\n File khong ton tai");
+					printf("\nFile khong ton tai");
 					machine->WriteRegister(2, -1);
 					break;
 				}
@@ -309,7 +309,7 @@ void ExceptionHandler(ExceptionType which)
 				// Console output
 				else if(fileID == 1)
 				{
-					printf("\n Khong the doc console output");
+					printf("\nKhong the doc console output");
 					machine->WriteRegister(2, -1);
 					break;
 				}
@@ -346,14 +346,14 @@ void ExceptionHandler(ExceptionType which)
 
 				if(fileID < 0 || fileID > 9)
 				{
-					printf("\n FileID phai nam trong doan [0, 9]");
+					printf("\nFileID phai nam trong doan [0, 9]");
 					machine->WriteRegister(2, -1);
 					break;
 				}
 
 				if(fileSystem->table[fileID] == NULL && fileID > 1)
 				{
-					printf("\n File khong ton tai");
+					printf("\nFile khong ton tai");
 					machine->WriteRegister(2, -1);
 					break;
 				}
@@ -362,7 +362,7 @@ void ExceptionHandler(ExceptionType which)
 				// Console input
 				if(fileID == 0)
 				{
-					printf("\n Khong the viet console input");
+					printf("\nKhong the viet console input");
 					machine->WriteRegister(2, -1);
 					break;
 				}
@@ -382,7 +382,7 @@ void ExceptionHandler(ExceptionType which)
 					// File chỉ đọc
 					if(fileSystem->table[fileID]->type == ReadOnly)
 					{
-						printf("\n Khong the viet duoc file chi doc");
+						printf("\nKhong the viet duoc file chi doc");
 						machine->WriteRegister(2, -1);
 					}
 					// File đọc và ghi
@@ -406,28 +406,28 @@ void ExceptionHandler(ExceptionType which)
 
 				if(pos < 0)
 				{
-					printf("\n pos phai lon hon 0");
+					printf("\npos phai lon hon 0");
 					machine->WriteRegister(2, -1);
 					break;
 				}
 
 				if(fileID < 0 || fileID > 9)
 				{
-					printf("\n FileID phai nam trong doan [0, 9]");
+					printf("\nFileID phai nam trong doan [0, 9]");
 					machine->WriteRegister(2, -1);
 					break;
 				}
 
 				if(fileID == 0 || fileID == 1)
 				{
-					printf("\n Khong the seek tren console");
+					printf("\nKhong the seek tren console");
 					machine->WriteRegister(2, -1);
 					break;
 				}
 
 				if(fileSystem->table[fileID] == NULL)
 				{
-					printf("\n File khong ton tai");
+					printf("\nFile khong ton tai");
 					machine->WriteRegister(2, -1);
 				}
 				else
@@ -459,13 +459,13 @@ void ExceptionHandler(ExceptionType which)
 				{
 					if(fileSystem->table[i] != NULL)
 					{
-						if(fileSystem->table[i]->filename == name)
+						if(strcmp(fileSystem->table[i]->filename, name) == 0)
 						{
 							printf("\nFile dang mo, khong the xoa");
 							machine->WriteRegister(2, -1);
 							delete[] name;
-							break;
-							break;
+							increasePC();
+							return;
 						}
 					}
 				}
@@ -488,7 +488,7 @@ void ExceptionHandler(ExceptionType which)
 
 			default:
 				break;
-			// printf("\n Unexpected user mode exception (%d %d)", which, syscallType);
+			// printf("\nUnexpected user mode exception (%d %d)", which, syscallType);
 			// interrupt->Halt();
 		}
 		break;
