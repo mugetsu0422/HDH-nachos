@@ -39,7 +39,7 @@ class OpenFile {
     OpenFile(int f) { file = f; currentOffset = 0; }	// open the file
 	// Overload constructor với tham số mới là filename
 	OpenFile(int f, int _type, char* _filename) 
-	{ file = f; currentOffset = 0;, type = _type; filename = _strdup(_filename); } 
+	{ file = f; currentOffset = 0; type = _type; filename = strdup(_filename); } 
     ~OpenFile() { Close(file); if(filename != NULL) delete[] filename;}			// close the file
 
     int ReadAt(char *into, int numBytes, int position) { 

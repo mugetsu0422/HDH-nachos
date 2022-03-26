@@ -41,7 +41,7 @@ OpenFile::OpenFile(int sector, int _type, char* _filename)
     hdr->FetchFrom(sector);
     seekPosition = 0;
     type = _type;
-    filename = _strdup(_filename);
+    filename = strdup(_filename);
 }
 
 //----------------------------------------------------------------------
