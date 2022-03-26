@@ -106,6 +106,48 @@ void ExceptionHandler(ExceptionType which)
 	case NoException:
 		return;
 
+	case PageFaultException:
+			DEBUG('a', "\nPage fault.");
+			printf("\n\nPage fault.");
+			interrupt->Halt();
+			break;
+
+		case ReadOnlyException:
+			DEBUG('a', "\nPage marked read-only");
+			printf("\n\nPage marked read-only");
+			interrupt->Halt();
+			break;
+
+		case BusErrorException:
+			DEBUG('a', "\nInvalid physical address");
+			printf("\n\nInvalid physical address");
+			interrupt->Halt();
+			break;
+
+		case AddressErrorException:
+			DEBUG('a', "\n Address error.");
+			printf("\n\n Address error.");
+			interrupt->Halt();
+			break;
+
+		case OverflowException:
+			DEBUG('a', "\nOverflow !!!");
+			printf("\n\nOverflow !!!");
+			interrupt->Halt();
+			break;
+
+		case IllegalInstrException:
+			DEBUG('a', "\nIllegal instr.");
+			printf("\n\nIllegal instr.");
+			interrupt->Halt();
+			break;
+
+		case NumExceptionTypes:
+			DEBUG('a', "\nNumber exception types");
+			printf("\n\nNumber exception types");
+			interrupt->Halt();
+			break;
+
 	case SyscallException:
 		switch (syscallType)
 		{
