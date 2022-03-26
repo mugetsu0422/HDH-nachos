@@ -42,6 +42,13 @@ class OpenFile {
 	{ file = f; currentOffset = 0; type = _type; filename = strdup(_filename); } 
     ~OpenFile() { Close(file); if(filename != NULL) delete[] filename;}			// close the file
 
+	int Seek(int position) 
+	{
+		Lseek(file, position, 0);
+		currentOffset = Tell(file);
+		return currentOffset;
+	}
+
     int ReadAt(char *into, int numBytes, int position) { 
     		Lseek(file, position, 0); 
 		return ReadPartial(file, into, numBytes); 
@@ -88,12 +95,12 @@ class OpenFile {
     ~OpenFile();				// Close the file
 
     void Seek(int position); 		// Set the position from which to 
-					// start reading/writing -- UNIX lseek
+									// start reading/writing -- UNIX lseek
 
     int Read(char *into, int numBytes); // Read/write bytes from the file,
-					// starting at the implicit position.
-					// Return the # actually read/written,
-					// and increment position in file.
+										// starting at the implicit position.
+										// Return the # actually read/written,
+										// and increment position in file.
     int Write(char *from, int numBytes);
 
     int ReadAt(char *into, int numBytes, int position);
