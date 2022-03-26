@@ -57,6 +57,16 @@ class FileSystem {
 		table[1] = this->Open("stdout", 3);
 	}
 
+	~FileSystem()
+	{
+		for(int i = 0; i < 10; i++)
+		{
+			if(table[i] != NULL)
+				delete table[i];
+		}
+		delete[] table;
+	}
+
     bool Create(char *name, int initialSize) { 
 	int fileDescriptor = OpenForWrite(name);
 
@@ -97,6 +107,16 @@ class FileSystem {
     					// If "format", there is nothing on
 					// the disk, so initialize the directory
     					// and the bitmap of free blocks.
+
+	~FileSystem()
+	{
+		for(int i = 0; i < 10; i++)
+		{
+			if(table[i] != NULL)
+				delete table[i];
+		}
+		delete[] table;
+	}
 
     bool Create(char *name, int initialSize);  	
 					// Create a file (UNIX creat)
