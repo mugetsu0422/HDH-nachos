@@ -171,8 +171,8 @@ void ExceptionHandler(ExceptionType which)
 				filename = User2System(virtAddr, MaxFileLength);
 				if (filename == NULL)
 				{
-					printf("\nHe thong khong du bo nho");
-					DEBUG('a',"\nHe thong khong du bo nho");
+					printf("\nCreate: He thong khong du bo nho");
+					DEBUG('a',"\nCreate: He thong khong du bo nho");
 					machine->WriteRegister(2, -1); // trả về lỗi cho chương trình người dùng
 					delete[] filename;
 					break;
@@ -185,7 +185,7 @@ void ExceptionHandler(ExceptionType which)
 				// trên ổ đĩa là một đồ án khác
 				if (!fileSystem->Create(filename, 0))
 				{
-					printf("\nError create file '%s'",filename);
+					printf("\nCreate: Khong the tao file '%s'",filename);
 					machine->WriteRegister(2, -1);
 					delete[] filename;
 					break;
@@ -209,7 +209,7 @@ void ExceptionHandler(ExceptionType which)
 				if(type < 0 || type > 2)
 				{
 					machine->WriteRegister(2, -1);
-					printf("\nTham so type sai quy dinh");
+					printf("\nOpen: Tham so type sai quy dinh");
 					break;
 				}
 				char* filename;
@@ -235,7 +235,7 @@ void ExceptionHandler(ExceptionType which)
 							machine->WriteRegister(2, freeSlot);	// ghi OpenFileID vào thanh ghi r2
 						else
 						{
-							printf("\nFile khong ton tai");
+							printf("\nOpen: File khong ton tai");
 							machine->WriteRegister(2, -1);
 						}
 					}
@@ -264,6 +264,7 @@ void ExceptionHandler(ExceptionType which)
 				}
 				else
 				{
+					printf("\nClose: FileID phai nam trong doan [2, 9]");
 					machine->WriteRegister(2, -1);
 				}
 				break;
@@ -281,14 +282,14 @@ void ExceptionHandler(ExceptionType which)
 
 				if(fileID < 0 || fileID > 9)
 				{
-					printf("\nFileID phai nam trong doan [0, 9]");
+					printf("\nRead: FileID phai nam trong doan [0, 9]");
 					machine->WriteRegister(2, -1);
 					break;
 				}
 
 				if(fileSystem->table[fileID] == NULL && fileID > 1)
 				{
-					printf("\nFile khong ton tai");
+					printf("\nRead: File khong ton tai");
 					machine->WriteRegister(2, -1);
 					break;
 				}
@@ -309,7 +310,7 @@ void ExceptionHandler(ExceptionType which)
 				// Console output
 				else if(fileID == 1)
 				{
-					printf("\nKhong the doc console output");
+					printf("\nRead: Khong the doc console output");
 					machine->WriteRegister(2, -1);
 					break;
 				}
@@ -346,14 +347,14 @@ void ExceptionHandler(ExceptionType which)
 
 				if(fileID < 0 || fileID > 9)
 				{
-					printf("\nFileID phai nam trong doan [0, 9]");
+					printf("\nWrite: FileID phai nam trong doan [0, 9]");
 					machine->WriteRegister(2, -1);
 					break;
 				}
 
 				if(fileSystem->table[fileID] == NULL && fileID > 1)
 				{
-					printf("\nFile khong ton tai");
+					printf("\nWrite: File khong ton tai");
 					machine->WriteRegister(2, -1);
 					break;
 				}
@@ -362,7 +363,7 @@ void ExceptionHandler(ExceptionType which)
 				// Console input
 				if(fileID == 0)
 				{
-					printf("\nKhong the viet console input");
+					printf("\nWrite: Khong the viet console input");
 					machine->WriteRegister(2, -1);
 					break;
 				}
@@ -382,7 +383,7 @@ void ExceptionHandler(ExceptionType which)
 					// File chỉ đọc
 					if(fileSystem->table[fileID]->type == ReadOnly)
 					{
-						printf("\nKhong the viet duoc file chi doc");
+						printf("\nWrite: Khong the viet duoc file chi doc");
 						machine->WriteRegister(2, -1);
 					}
 					// File đọc và ghi
@@ -406,28 +407,28 @@ void ExceptionHandler(ExceptionType which)
 
 				if(pos < 0)
 				{
-					printf("\npos phai lon hon 0");
+					printf("\nSeel: Pos phai lon hon 0");
 					machine->WriteRegister(2, -1);
 					break;
 				}
 
 				if(fileID < 0 || fileID > 9)
 				{
-					printf("\nFileID phai nam trong doan [0, 9]");
+					printf("\nSeek: FileID phai nam trong doan [0, 9]");
 					machine->WriteRegister(2, -1);
 					break;
 				}
 
 				if(fileID == 0 || fileID == 1)
 				{
-					printf("\nKhong the seek tren console");
+					printf("\nSeek: Khong the seek tren console");
 					machine->WriteRegister(2, -1);
 					break;
 				}
 
 				if(fileSystem->table[fileID] == NULL)
 				{
-					printf("\nFile khong ton tai");
+					printf("\nSeek: File khong ton tai");
 					machine->WriteRegister(2, -1);
 				}
 				else
@@ -461,7 +462,7 @@ void ExceptionHandler(ExceptionType which)
 					{
 						if(strcmp(fileSystem->table[i]->filename, name) == 0)
 						{
-							printf("\nFile dang mo, khong the xoa");
+							printf("\nDelete: File dang mo, khong the xoa");
 							machine->WriteRegister(2, -1);
 							delete[] name;
 							increasePC();
@@ -472,12 +473,12 @@ void ExceptionHandler(ExceptionType which)
 				
 				if(fileSystem->Remove(name) == 1)
 				{
-					printf("\nXoa file \"%s\" thanh cong", name);
+					printf("\nDelete: Xoa file \"%s\" thanh cong", name);
 					machine->WriteRegister(2, 0);
 				}
 				else
 				{
-					printf("\nKhong ton tai file \"%s\"", name);
+					printf("\nDelete: Khong ton tai file \"%s\"", name);
 					machine->WriteRegister(2, -1);
 				}
 				delete[] name;
