@@ -325,10 +325,11 @@ void ExceptionHandler(ExceptionType which)
 					else
 					{
 						// Chuyển chuỗi đọc được từ console output sang cho user
-						System2User(virtAddr, n, buffer);
-					}
 						machine->WriteRegister(2, n);
-						delete[] buffer;
+						
+					}
+					System2User(virtAddr, n, buffer);
+					delete[] buffer;
 					break;
 				}
 			}
