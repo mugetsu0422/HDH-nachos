@@ -260,13 +260,6 @@ void ExceptionHandler(ExceptionType which)
 			// Console input
 			if(fileID == 0)
 			{
-				printf("\n Khong the doc console input");
-				machine->WriteRegister(2, -1);
-				break;
-			}
-			// Console output
-			else if(fileID == 1)
-			{
 				// Dùng hàm Read của SynchConsole để đọc từ console output
 				int n = gSynchConsole->Read(buffer, charcount);
 				// Nếu đọc đến cuối file
@@ -281,6 +274,13 @@ void ExceptionHandler(ExceptionType which)
 					machine->WriteRegister(2, n);
 					delete[] buffer;
 				}
+				break;
+			}
+			// Console output
+			else if(fileID == 1)
+			{
+				printf("\n Khong the doc console output");
+				machine->WriteRegister(2, -1);
 				break;
 			}
 			// File bình thường
@@ -329,17 +329,18 @@ void ExceptionHandler(ExceptionType which)
 			// Console input
 			if(fileID == 0)
 			{
-				// Dùng hàm Write của SynchConsole để viết console input
-				int n = gSynchConsole->Write(buffer, charcount);
-				machine->WriteRegister(2, n);
-				delete[] buffer;
+				printf("\n Khong the viet console input");
+				machine->WriteRegister(2, -1);
 				break;
 			}
 			// Console output
 			else if(fileID == 1)
 			{
-				printf("\n Khong the viet console output");
-				machine->WriteRegister(2, -1);
+
+				// Dùng hàm Write của SynchConsole để viết console input
+				int n = gSynchConsole->Write(buffer, charcount);
+				machine->WriteRegister(2, n);
+				delete[] buffer;
 				break;
 			}
 			// File bình thường
@@ -447,6 +448,8 @@ void ExceptionHandler(ExceptionType which)
 			printf("\n Unexpected user mode exception (%d %d)", which, syscallType);
 			interrupt->Halt();
 		}
+		break;
+
 	default:
 		break;
 		increasePC();
