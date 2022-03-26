@@ -257,22 +257,17 @@ void ExceptionHandler(ExceptionType which)
 				break;
 			}
 
+			buffer = User2System(virtAddr, charcount);
 			// Console input
 			if(fileID == 0)
 			{
 				// Dùng hàm Read của SynchConsole để đọc từ console output
 				int n = gSynchConsole->Read(buffer, charcount);
 				// Nếu đọc đến cuối file
-				if(n < charcount)
-				{
-					machine->WriteRegister(2, -2);
-				}
-				else
-				{
-					// Chuyển chuỗi đọc được từ console output sang cho user
-					System2User(virtAddr, n, buffer);
-					machine->WriteRegister(2, n);
-					delete[] buffer;
+				// Chuyển chuỗi đọc được từ console output sang cho user
+				System2User(virtAddr, n, buffer);
+				machine->WriteRegister(2, n);
+				delete[] buffer;
 				}
 				break;
 			}
@@ -310,7 +305,6 @@ void ExceptionHandler(ExceptionType which)
 			int charcount = machine->ReadRegister(5);
 			int fileID = machine->ReadRegister(6);
 			char* buffer;
-			buffer = User2System(virtAddr, charcount);
 
 			if(fileID < 0 || fileID > 9)
 			{
@@ -326,6 +320,7 @@ void ExceptionHandler(ExceptionType which)
 				break;
 			}
 
+			buffer = User2System(virtAddr, charcount);
 			// Console input
 			if(fileID == 0)
 			{
@@ -426,11 +421,13 @@ void ExceptionHandler(ExceptionType which)
 					{
 						printf("\nFile dang mo, khong the xoa");
 						machine->WriteRegister(2, -1);
+						delete[] name;
 						break;
 						break;
 					}
 				}
 			}
+			
 			if(fileSystem->Remove(name) == 1)
 			{
 				printf("\nXoa file \"%s\" thanh cong", name);
@@ -441,17 +438,14 @@ void ExceptionHandler(ExceptionType which)
 				printf("\nKhong ton tai file \"%s\"", name);
 				machine->WriteRegister(2, -1);
 			}
+			delete[] name;
 			break;
 		}
-
-		default:
-			printf("\n Unexpected user mode exception (%d %d)", which, syscallType);
-			interrupt->Halt();
-		}
 		break;
-
-	default:
-		break;
-		increasePC();
+		// default:
+		// 	printf("\n Unexpected user mode exception (%d %d)", which, syscallType);
+		// 	interrupt->Halt();
 	}
+	increasePC();
 }
+	
