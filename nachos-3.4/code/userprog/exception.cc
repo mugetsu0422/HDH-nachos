@@ -177,7 +177,7 @@ void ExceptionHandler(ExceptionType which)
 				int freeSlot = -1;
 				for(int i = 2; i < 10; i++)
 				{
-					if(fileSystem->table[i] != NULL)
+					if(fileSystem->table[i] == NULL)
 					{
 						freeSlot = i;
 						break;
