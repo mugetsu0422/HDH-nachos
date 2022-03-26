@@ -52,9 +52,9 @@ class FileSystem {
 		for(int i = 0; i < 10; i++)
 			table[i] = NULL;
 		this->Create("stdin", 0);
-		fileSystem->table[0] = fileSystem->Open("stdin", 2);
+		table[0] = this->Open("stdin", 2);
 		this->Create("stdout", 0);
-		fileSystem->table[1] = fileSystem->Open("stdout", 3);
+		table[1] = this->Open("stdout", 3);
 	}
 
     bool Create(char *name, int initialSize) { 
