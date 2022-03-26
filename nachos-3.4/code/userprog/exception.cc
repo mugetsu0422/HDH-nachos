@@ -449,7 +449,6 @@ void ExceptionHandler(ExceptionType which)
 		}
 	default:
 		break;
-		
+		increasePC();
 	}
-	increasePC();
 }
