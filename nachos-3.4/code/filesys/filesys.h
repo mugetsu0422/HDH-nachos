@@ -51,10 +51,6 @@ class FileSystem {
 		table = new OpenFile*[10];
 		for(int i = 0; i < 10; i++)
 			table[i] = NULL;
-		this->Create("stdin", 0);
-		table[0] = this->Open("stdin", 2);
-		this->Create("stdout", 0);
-		table[1] = this->Open("stdout", 3);
 	}
 
 	~FileSystem()

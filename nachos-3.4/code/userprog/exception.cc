@@ -26,6 +26,9 @@
 #include "syscall.h"
 
 #define MaxFileLength 32
+// type cho việc mở file
+#define ReadWrite 0
+#define ReadOnly 1
 
 //----------------------------------------------------------------------
 // ExceptionHandler
@@ -112,41 +115,41 @@ void ExceptionHandler(ExceptionType which)
 			interrupt->Halt();
 			break;
 
-		case ReadOnlyException:
-			DEBUG('a', "\nPage marked read-only");
-			printf("\n\nPage marked read-only");
-			interrupt->Halt();
-			break;
+	case ReadOnlyException:
+		DEBUG('a', "\nPage marked read-only");
+		printf("\n\nPage marked read-only");
+		interrupt->Halt();
+		break;
 
-		case BusErrorException:
-			DEBUG('a', "\nInvalid physical address");
-			printf("\n\nInvalid physical address");
-			interrupt->Halt();
-			break;
+	case BusErrorException:
+		DEBUG('a', "\nInvalid physical address");
+		printf("\n\nInvalid physical address");
+		interrupt->Halt();
+		break;
 
-		case AddressErrorException:
-			DEBUG('a', "\n Address error.");
-			printf("\n\n Address error.");
-			interrupt->Halt();
-			break;
+	case AddressErrorException:
+		DEBUG('a', "\n Address error.");
+		printf("\n\n Address error.");
+		interrupt->Halt();
+		break;
 
-		case OverflowException:
-			DEBUG('a', "\nOverflow !!!");
-			printf("\n\nOverflow !!!");
-			interrupt->Halt();
-			break;
+	case OverflowException:
+		DEBUG('a', "\nOverflow !!!");
+		printf("\n\nOverflow !!!");
+		interrupt->Halt();
+		break;
 
-		case IllegalInstrException:
-			DEBUG('a', "\nIllegal instr.");
-			printf("\n\nIllegal instr.");
-			interrupt->Halt();
-			break;
+	case IllegalInstrException:
+		DEBUG('a', "\nIllegal instr.");
+		printf("\n\nIllegal instr.");
+		interrupt->Halt();
+		break;
 
-		case NumExceptionTypes:
-			DEBUG('a', "\nNumber exception types");
-			printf("\n\nNumber exception types");
-			interrupt->Halt();
-			break;
+	case NumExceptionTypes:
+		DEBUG('a', "\nNumber exception types");
+		printf("\n\nNumber exception types");
+		interrupt->Halt();
+		break;
 
 	case SyscallException:
 		switch (syscallType)
@@ -157,26 +160,23 @@ void ExceptionHandler(ExceptionType which)
 				interrupt->Halt();
 				break;
 
+			// ---------------------------------------------------------------- //
+
 			case SC_Create:
 			{
 				int virtAddr;
 				char* filename;
-				DEBUG('a',"\n SC_Create call ...");
-				DEBUG('a',"\n Reading virtual address of filename");
 				// Lấy tham số tên tập tin từ thanh ghi r4
 				virtAddr = machine->ReadRegister(4);
-				DEBUG ('a',"\n Reading filename.");
 				filename = User2System(virtAddr, MaxFileLength);
 				if (filename == NULL)
 				{
-					printf("\n Not enough memory in system");
-					DEBUG('a',"\n Not enough memory in system");
+					printf("\nHe thong khong du bo nho");
+					DEBUG('a',"\nHe thong khong du bo nho");
 					machine->WriteRegister(2, -1); // trả về lỗi cho chương trình người dùng
 					delete[] filename;
 					break;
 				}
-				DEBUG('a',"\n Finish reading filename.");
-				//DEBUG(‘a’,"\n File name : '"<<filename<<"'");
 				// Create file with size = 0
 				// Dùng đối tượng fileSystem của lớp OpenFile để tạo file,
 				// việc tạo file này là sử dụng các thủ tục tạo file của hệ điều
@@ -195,6 +195,8 @@ void ExceptionHandler(ExceptionType which)
 				break;
 			}
 
+			// ---------------------------------------------------------------- //
+
 			case SC_Open:
 			{
 				// OpenFileId Open(char *name, int type);
@@ -204,9 +206,7 @@ void ExceptionHandler(ExceptionType which)
 				int type = machine->ReadRegister(5);
 				// 0: đọc và ghi
 				// 1: chỉ đọc
-				// 2: console input
-				// 3: console output
-				if(type < 0 || type > 4)
+				if(type < 0 || type > 2)
 				{
 					machine->WriteRegister(2, -1);
 					printf("\n Tham so type sai quy dinh");
@@ -228,7 +228,7 @@ void ExceptionHandler(ExceptionType which)
 				if(freeSlot != -1)
 				{
 					// Mở file đọc và ghi; và file chỉ đọc
-					if(type == 0 || type == 1)
+					if(type == ReadWrite || type == ReadOnly)
 					{
 						fileSystem->table[freeSlot] = fileSystem->Open(filename, type);
 						if(fileSystem->table[freeSlot] != NULL)
@@ -239,16 +239,6 @@ void ExceptionHandler(ExceptionType which)
 							machine->WriteRegister(2, -1);
 						}
 					}
-					// mở file console input
-					else if(type == 2)	
-					{
-						machine->WriteRegister(2, 0);
-					}
-					// Mở file console output
-					else
-					{
-						machine->WriteRegister(2, 1);
-					}
 				}
 				else
 					machine->WriteRegister(2, -1);
@@ -256,12 +246,14 @@ void ExceptionHandler(ExceptionType which)
 				break;
 			}
 
+			// ---------------------------------------------------------------- //
+
 			case SC_Close:
 			{
 				// int Close(OpenFileId id);
 				// lấy file id từ thanh ghi r4
 				int fileID = machine->ReadRegister(4);
-				if(fileID >= 0 && fileID <= 9)
+				if(fileID >= 2 && fileID <= 9)
 				{
 					if(fileSystem->table[fileID] != NULL)
 					{
@@ -276,6 +268,8 @@ void ExceptionHandler(ExceptionType which)
 				}
 				break;
 			}
+
+			// ---------------------------------------------------------------- //
 
 			case SC_Read:
 			{
@@ -292,7 +286,7 @@ void ExceptionHandler(ExceptionType which)
 					break;
 				}
 
-				if(fileSystem->table[fileID] == NULL)
+				if(fileSystem->table[fileID] == NULL && fileID > 1)
 				{
 					printf("\n File khong ton tai");
 					machine->WriteRegister(2, -1);
@@ -339,6 +333,8 @@ void ExceptionHandler(ExceptionType which)
 				}
 			}
 
+			// ---------------------------------------------------------------- //
+
 			case SC_Write:
 			{
 				// int Write(char *buffer, int charcount, OpenFileId id);
@@ -354,7 +350,7 @@ void ExceptionHandler(ExceptionType which)
 					break;
 				}
 
-				if(fileSystem->table[fileID] == NULL)
+				if(fileSystem->table[fileID] == NULL && fileID > 1)
 				{
 					printf("\n File khong ton tai");
 					machine->WriteRegister(2, -1);
@@ -383,7 +379,7 @@ void ExceptionHandler(ExceptionType which)
 				else
 				{
 					// File chỉ đọc
-					if(fileSystem->table[fileID]->type == 1)
+					if(fileSystem->table[fileID]->type == ReadOnly)
 					{
 						printf("\n Khong the viet duoc file chi doc");
 						machine->WriteRegister(2, -1);
@@ -398,6 +394,8 @@ void ExceptionHandler(ExceptionType which)
 					break;
 				}
 			}
+
+			// ---------------------------------------------------------------- //
 
 			case SC_Seek:
 			{
@@ -419,16 +417,16 @@ void ExceptionHandler(ExceptionType which)
 					break;
 				}
 
-				if(fileSystem->table[fileID] == NULL)
+				if(fileID == 0 || fileID == 1)
 				{
-					printf("\n File khong ton tai");
+					printf("\n Khong the seek tren console");
 					machine->WriteRegister(2, -1);
 					break;
 				}
 
-				if(fileID == 0 || fileID == 1)
+				if(fileSystem->table[fileID] == NULL)
 				{
-					printf("\n Khong the seek tren console");
+					printf("\n File khong ton tai");
 					machine->WriteRegister(2, -1);
 				}
 				else
@@ -448,6 +446,8 @@ void ExceptionHandler(ExceptionType which)
 				}
 				break;
 			}
+
+			// ---------------------------------------------------------------- //
 
 			case SC_Delete:
 			{
@@ -482,6 +482,8 @@ void ExceptionHandler(ExceptionType which)
 				delete[] name;
 				break;
 			}
+
+			// ---------------------------------------------------------------- //
 
 			default:
 				break;
