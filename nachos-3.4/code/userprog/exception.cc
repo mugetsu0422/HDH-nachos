@@ -213,7 +213,7 @@ void ExceptionHandler(ExceptionType which)
 					break;
 				}
 				char* filename;
-				// Đọc tên file từ địa chỉa thanh ghi r4
+				// Đọc tên file từ địa chỉ thanh ghi r4
 				filename = User2System(virtAddr, MaxFileLength);
 				// Tìm ô còn trống
 				int freeSlot = -1;
