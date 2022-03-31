@@ -74,6 +74,12 @@ copy: copy.o start.o
 	../bin/coff2noff copy.coff copy
 
 
+delete.o: delete.c
+	$(CC) $(CFLAGS) -c delete.c
+delete: delete.o start.o
+	$(LD) $(LDFLAGS) start.o delete.o -o delete.coff
+	../bin/coff2noff delete.coff delete
+
 sort.o: sort.c
 	$(CC) $(CFLAGS) -c sort.c
 sort: sort.o start.o
