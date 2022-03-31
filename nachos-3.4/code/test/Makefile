@@ -36,7 +36,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -c $(INCDIR)
 
-all: halt shell matmult sort createfile
+all: halt shell echo cat copy delete matmult sort createfile
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
