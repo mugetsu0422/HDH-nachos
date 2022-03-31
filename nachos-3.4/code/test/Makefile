@@ -13,23 +13,22 @@
 # if you are cross-compiling, you need to point to the right executables
 # and change the flags to ld and the build procedure for as
 
-# GCCDIR = ../../../gnu-decstation-ultrix/decstation-ultrix/2.95.3/
+GCCDIR = ../../../gnu-decstation-ultrix/decstation-ultrix/2.95.3/
 
-# LDFLAGS = -T script -N
-# ASFLAGS = -mips2
-# CPPFLAGS = $(INCDIR)
+LDFLAGS = -T script -N
+ASFLAGS = -mips2
+CPPFLAGS = $(INCDIR)
 
 # if you aren't cross-compiling:
-GCCDIR = ../../../gnu-decstation-ultrix/decstation-ultrix/2.95.3/
+#GCCDIR = ../../../gnu-decstation-ultrix/decstation-ultrix/2.95.3/
 GCCULTRIXDIR = ../../../gnu-decstation-ultrix/decstation-ultrix/2.95.3/
-LDFLAGS = -N
-ASFLAGS = -mips2
-CPPFLAGS = -P $(INCDIR)
+#LDFLAGS = -N -T 0
+#ASFLAGS = -mips2
+#CPPFLAGS = -P $(INCDIR)
 
 PATH = $(GCCDIR):/lib:/usr/bin:/bin
 
-CC = $(GCCDIR)gcc 
-# -B../../../gnu-decstation-ultrix/
+CC = $(GCCDIR)gcc -B../../../gnu-decstation-ultrix/
 AS = $(GCCULTRIXDIR)as
 LD = $(GCCDIR)ld
 
@@ -55,6 +54,12 @@ shell.o: shell.c
 shell: shell.o start.o
 	$(LD) $(LDFLAGS) start.o shell.o -o shell.coff
 	../bin/coff2noff shell.coff shell
+
+echo.o: echo.c
+	$(CC) $(CFLAGS) -c echo.c
+echo: echo.o start.o
+	$(LD) $(LDFLAGS) start.o echo.o -o echo.coff
+	../bin/coff2noff echo.coff echo
 
 sort.o: sort.c
 	$(CC) $(CFLAGS) -c sort.c
