@@ -1,1 +1,15 @@
 *.o
+*.coff
+*.txt
+nachos
+nachos-3.4/bin/coff2flat
+nachos-3.4/bin/coff2noff
+nachos-3.4/bin/dissassemble
+nachos-3.4/bin/out
+nachos-3.4/test/cat
+nachos-3.4/test/copy
+nachos-3.4/test/createfile
+nachos-3.4/test/delete
+nachos-3.4/test/halt
+nachos-3.4/test/matmult
+nachos-3.4/test/sort
