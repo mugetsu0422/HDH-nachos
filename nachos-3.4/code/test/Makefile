@@ -13,27 +13,29 @@
 # if you are cross-compiling, you need to point to the right executables
 # and change the flags to ld and the build procedure for as
 
-GCCDIR = ../../../gnu-decstation-ultrix/decstation-ultrix/2.95.3/
+# GCCDIR = ../../../gnu-decstation-ultrix/decstation-ultrix/2.95.3/
 
-LDFLAGS = -T script -N
-ASFLAGS = -mips2
-CPPFLAGS = $(INCDIR)
+# LDFLAGS = -T script -N
+# ASFLAGS = -mips2
+# CPPFLAGS = $(INCDIR)
 
 # if you aren't cross-compiling:
-# GCCDIR =
-# LDFLAGS = -N -T 0
-# ASFLAGS =
-# CPPFLAGS = -P $(INCDIR)
+GCCDIR = ../../../gnu-decstation-ultrix/decstation-ultrix/2.95.3/
+GCCULTRIXDIR = ../../../gnu-decstation-ultrix/decstation-ultrix/2.95.3/
+LDFLAGS = -N
+ASFLAGS = -mips2
+CPPFLAGS = -P $(INCDIR)
 
 PATH = $(GCCDIR):/lib:/usr/bin:/bin
 
-CC = $(GCCDIR)gcc -B../../../gnu-decstation-ultrix/
-AS = $(GCCDIR)as
+CC = $(GCCDIR)gcc 
+# -B../../../gnu-decstation-ultrix/
+AS = $(GCCULTRIXDIR)as
 LD = $(GCCDIR)ld
 
 CPP = gcc -E
 INCDIR =-I../userprog -I../threads
-CFLAGS = -G 0 -c $(INCDIR)
+CFLAGS = -c $(INCDIR)
 
 all: halt shell matmult sort createfile
 
