@@ -9,6 +9,7 @@ int main() {
     char *failMessage = "Unable to read the target file!\n";
     int i = 0;
 
+    Write("Nhap ten file:\n", 32, output);
     do 
     {
         Read(&buffer[i], 1, input); 

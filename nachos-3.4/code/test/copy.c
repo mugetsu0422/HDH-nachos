@@ -13,14 +13,14 @@ int main()
     int i = 0;
 
 	// Lay ten file
-	Write("Nhap ten file goc\n", 32, output);
+	Write("Nhap ten file goc:\n", 32, output);
 	do 
     {
         Read(&srcName[i], 1, input); 
     } while((srcName[i] != '\n') && (srcName[i] != 13) && (srcName[i++] != 0));
     srcName[--i] = 0;
 
-	Write("\nNhap ten file dich\n", 32, output);
+	Write("\nNhap ten file dich:\n", 32, output);
     i = 0;
 	do 
     {
