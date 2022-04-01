@@ -1,53 +1,58 @@
 #include "syscall.h"
+#define MAXLENGTH 255
 
-void printCode(char c){
-    OpenFileID output = ConsoleOutput;
-    char buffer[1];
-    while(c > 0){
-         buffer[0] = '0' + c % 10;
-	 c /= 10;
-	 Write(buffer, 1, output);
-    }
-    buffer[0] = ' ';
-    Write(buffer, 1, output);
-}
-
-OpenFileID openFile(int type) {
+int main() 
+{
+	OpenFileID input = ConsoleInput;	// 0
+	OpenFileID output = ConsoleOutput;	// 1
+	char srcName[MAXLENGTH], dstName[MAXLENGTH];
+	OpenFileID src;
+	OpenFileID dst;
+	char buffer[1];
+	char *failMessage = "Unable to read the target file!";
     int i = 0;
-    OpenFileID input = ConsoleInput;
-    OpenFileID file = -1;
-    char buffer[256];
-    do {
-        Read(&buffer[i], 1, input); 
-	printCode(buffer[i]);
-    } while((buffer[i] != '\n') && (buffer[i] != 13) && (buffer[i++] != 0));
-    buffer[--i] = 0;
-    if(type == 0){
-        Create(buffer);
-    }
-    file = Open(buffer, type);
-    return file;
-}
 
-int main() {
-    OpenFileID output = ConsoleOutput;
-    OpenFileID src = openFile(1);
-    OpenFileID dst = openFile(0);
-    char buffer[1];
-    char *failMessage = "Unable to read the target file!";
-    if((src < 0) || (dst < 0)){
-        Write(failMessage, 1, output);
-	Halt();
-	return -1;
-    }
-    while(1){
-        int status = Read(buffer, 1, src);
-	if(status < 0){
-	    Close(src);
-	    Close(dst);
-	    Halt();
-	    return 0;
+	// Lay ten file
+	Write("Nhap ten file goc\n", 32, output);
+	do 
+    {
+        Read(&srcName[i], 1, input); 
+    } while((srcName[i] != '\n') && (srcName[i] != 13) && (srcName[i++] != 0));
+    srcName[--i] = 0;
+
+	Write("\nNhap ten file dich\n", 32, output);
+    i = 0;
+	do 
+    {
+        Read(&dstName[i], 1, input); 
+    } while((dstName[i] != '\n') && (dstName[i] != 13) && (dstName[i++] != 0));
+    dstName[--i] = 0;
+
+	// Mo src file
+	src = Open(srcName, 1);
+	// Tao va mo des file 
+	Create(dstName);
+	dst = Open(dstName, 0);
+
+
+	if((src < 0) || (dst < 0))
+	{
+		Write(failMessage, 64, output);
+		Halt();
+		return -1;
 	}
+	// Doc noi dung file goc va chuyen den file dich
+	while(1)
+	{
+		int status = Read(buffer, 1, src);
+		if(status < 0)
+		{
+			Close(src);
+			Close(dst);
+			Halt();
+			return 0;
+		}
 	Write(buffer, 1, dst);
-    }
+	}
+	return 0;
 }

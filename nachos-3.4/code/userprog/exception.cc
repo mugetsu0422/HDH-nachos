@@ -164,6 +164,7 @@ void ExceptionHandler(ExceptionType which)
 
 			case SC_Create:
 			{
+				// int Create(char *name);
 				int virtAddr;
 				char* filename;
 				// Lấy tham số tên tập tin từ thanh ghi r4
@@ -278,7 +279,7 @@ void ExceptionHandler(ExceptionType which)
 				int virtAddr = machine->ReadRegister(4);
 				int charcount = machine->ReadRegister(5);
 				int fileID = machine->ReadRegister(6);
-				char* buffer = new char[MaxFileLength];
+				char* buffer;
 
 				// fileID không hợp lệ
 				if(fileID < 0 || fileID > 9)
@@ -296,6 +297,7 @@ void ExceptionHandler(ExceptionType which)
 					break;
 				}
 
+				buffer = new char[MaxFileLength];
 				// Console input
 				if(fileID == 0)
 				{
@@ -305,6 +307,7 @@ void ExceptionHandler(ExceptionType which)
 					// Chuyển chuỗi đọc được từ console output sang cho user
 					System2User(virtAddr, n, buffer);
 					machine->WriteRegister(2, n);
+					delete[] buffer;
 					break;
 				}
 				// Console output
@@ -312,6 +315,7 @@ void ExceptionHandler(ExceptionType which)
 				{
 					printf("Read: Khong the doc console output\n");
 					machine->WriteRegister(2, -1);
+					delete[] buffer;
 					break;
 				}
 				// File bình thường
@@ -330,9 +334,9 @@ void ExceptionHandler(ExceptionType which)
 						
 					}
 					System2User(virtAddr, n, buffer);
+					delete[] buffer;
 					break;
 				}
-				delete[] buffer;
 			}
 
 			// ---------------------------------------------------------------- //
