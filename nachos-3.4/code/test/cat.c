@@ -5,7 +5,7 @@ int main() {
     OpenFileID output = ConsoleOutput;
     OpenFileID file = -1;
     char buffer[256];
-    char *failMessage = "Unable to read the target file!";
+    char *failMessage = "Unable to read the target file!\n";
     int i = 0;
     do {
         Read(&buffer[i], 1, input); 
@@ -13,7 +13,7 @@ int main() {
     buffer[--i] = 0;
     file = Open(buffer, 1);
     if(file < 0){
-        Write(failMessage, 1, output);
+        Write(failMessage, 64, output);
 	Halt();
 	return -1;
     }

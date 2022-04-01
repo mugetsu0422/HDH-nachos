@@ -25,7 +25,7 @@
 #include "system.h"
 #include "syscall.h"
 
-#define MaxFileLength 32
+#define MaxFileLength 255
 // type cho việc mở file
 #define ReadWrite 0
 #define ReadOnly 1
@@ -278,7 +278,7 @@ void ExceptionHandler(ExceptionType which)
 				int virtAddr = machine->ReadRegister(4);
 				int charcount = machine->ReadRegister(5);
 				int fileID = machine->ReadRegister(6);
-				char* buffer;
+				char* buffer = new char[MaxFileLength];
 
 				// fileID không hợp lệ
 				if(fileID < 0 || fileID > 9)
@@ -296,7 +296,6 @@ void ExceptionHandler(ExceptionType which)
 					break;
 				}
 
-				buffer = User2System(virtAddr, charcount);
 				// Console input
 				if(fileID == 0)
 				{
@@ -306,7 +305,6 @@ void ExceptionHandler(ExceptionType which)
 					// Chuyển chuỗi đọc được từ console output sang cho user
 					System2User(virtAddr, n, buffer);
 					machine->WriteRegister(2, n);
-					delete[] buffer;
 					break;
 				}
 				// Console output
@@ -332,9 +330,9 @@ void ExceptionHandler(ExceptionType which)
 						
 					}
 					System2User(virtAddr, n, buffer);
-					delete[] buffer;
 					break;
 				}
+				delete[] buffer;
 			}
 
 			// ---------------------------------------------------------------- //

@@ -1,5 +1,17 @@
 #include "syscall.h"
 
+void printCode(char c){
+    OpenFileID output = ConsoleOutput;
+    char buffer[1];
+    while(c > 0){
+         buffer[0] = '0' + c % 10;
+	 c /= 10;
+	 Write(buffer, 1, output);
+    }
+    buffer[0] = ' ';
+    Write(buffer, 1, output);
+}
+
 OpenFileID openFile(int type) {
     int i = 0;
     OpenFileID input = ConsoleInput;
@@ -7,6 +19,7 @@ OpenFileID openFile(int type) {
     char buffer[256];
     do {
         Read(&buffer[i], 1, input); 
+	printCode(buffer[i]);
     } while((buffer[i] != '\n') && (buffer[i] != 13) && (buffer[i++] != 0));
     buffer[--i] = 0;
     if(type == 0){
