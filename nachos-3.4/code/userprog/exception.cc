@@ -24,7 +24,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
-#include "exception.cc"
+#include "progtest.cc"
 
 #define MaxFileLength 255
 // type cho việc mở file
