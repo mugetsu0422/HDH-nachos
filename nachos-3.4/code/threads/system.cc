@@ -30,7 +30,7 @@ SynchDisk   *synchDisk;
 #ifdef USER_PROGRAM	// requires either FILESYS or FILESYS_STUB
 Machine *machine;	// user program memory and registers
 SynchConsole* gSynchConsole;    // for read and write console
-Bitmap* pages;      // manage pages
+BitMap* pages;      // manage pages
 Thread** mythreads;	
 #endif
 
