@@ -24,6 +24,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+#include "exception.cc"
 
 #define MaxFileLength 255
 // type cho việc mở file
@@ -562,7 +563,8 @@ void ExceptionHandler(ExceptionType which)
 				if(threadID != -1)
 				{
 					mythreads[threadID] = new Thread(filename);
-					mythreads[threadID]->Fork(StartProcess(filename), threadID);
+					mythreads[threadID]->ID = threadID;
+					mythreads[threadID]->Fork(StartProcessfilename, threadID);
 				}
 				machine->WriteRegister(2, threadID);
 				delete[] filename;
