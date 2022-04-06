@@ -31,6 +31,7 @@ SynchDisk   *synchDisk;
 Machine *machine;	// user program memory and registers
 SynchConsole* gSynchConsole;    // for read and write console
 Bitmap* pages;      // manage pages
+Thread** mythreads;	
 #endif
 
 #ifdef NETWORK
