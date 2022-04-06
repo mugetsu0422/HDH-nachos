@@ -30,6 +30,7 @@ SynchDisk   *synchDisk;
 #ifdef USER_PROGRAM	// requires either FILESYS or FILESYS_STUB
 Machine *machine;	// user program memory and registers
 SynchConsole* gSynchConsole;    // for read and write console
+Bitmap* pages;      // manage pages
 #endif
 
 #ifdef NETWORK
@@ -151,6 +152,10 @@ Initialize(int argc, char **argv)
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg);	// this must come first
     gSynchConsole = new SynchConsole();
+    pages = new BitMap(256);
+    mythreads = new Thread*[10];
+    for(int i = 0; i < 10; i++)
+        mythreads[i] = NULL;
 #endif
 
 #ifdef FILESYS
@@ -181,6 +186,10 @@ Cleanup()
 #ifdef USER_PROGRAM
     delete machine;
     delete gSynchConsole;
+    delete pages;
+    for(int i = 0; i < 10; i++)
+        if(mythreads[i] != NULL) delete mythreads[i];
+    delete[] mythreads;
 #endif
 
 #ifdef FILESYS_NEEDED

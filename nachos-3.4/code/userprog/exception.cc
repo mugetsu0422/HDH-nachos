@@ -29,6 +29,7 @@
 // type cho việc mở file
 #define ReadWrite 0
 #define ReadOnly 1
+#define ThreadsSize 10
 
 //----------------------------------------------------------------------
 // ExceptionHandler
@@ -242,7 +243,10 @@ void ExceptionHandler(ExceptionType which)
 					}
 				}
 				else
+				{
+					printf("Bang mo ta file khong con o trong\n");
 					machine->WriteRegister(2, -1);
+				}
 				delete[] filename;
 				break;
 			}
@@ -500,7 +504,73 @@ void ExceptionHandler(ExceptionType which)
 			}
 
 			// ---------------------------------------------------------------- //
+			case SC_Exec:
+			{
+				// SpaceId Exec(char *name);
+				int virtAddr = machine->ReadRegister(4);
+				char* filename = User2System(virtAddr, MaxFileLength);
 
+				if(filename == NULL)
+				{
+					printf("He thong khong du bo nho\n");
+					machine->WriteRegister(2, -1);
+					break;
+				}
+
+				// Tìm ô còn trống
+				int freeSlot = -1;
+				for(int i = 2; i < 10; i++)
+				{
+					if(fileSystem->table[i] == NULL)
+					{
+						freeSlot = i;
+						break;
+					}
+				}
+				if(freeSlot != -1)
+				{
+					// Mở file đọc và ghi; và file chỉ đọc
+					fileSystem->table[freeSlot] = fileSystem->Open(filename, ReadOnly);
+					if(fileSystem->table[freeSlot] == NULL)
+					{
+						printf("Exec: File khong ton tai\n");
+						machine->WriteRegister(2, -1);
+						delete[] filename;
+						break;
+					}
+
+				}
+				else
+				{
+					printf("Bang mo ta file khong con o trong\n");
+					machine->WriteRegister(2, -1);
+					delete[] filename;
+					break;
+				}
+
+				// Tìm ô còn trổng của threads
+				int threadID = -1;
+				for(int i = 0; i < ThreadsSize; i++)
+				{
+					if(mythreads[i] == NULL)
+					{
+						threadID = i;
+						break;
+					}
+				}
+				
+				if(threadID != -1)
+				{
+					mythreads[threadID] = new Thread(filename);
+					mythreads[threadID]->Fork(StartProcess(filename), threadID);
+				}
+				machine->WriteRegister(2, threadID);
+				delete[] filename;
+				break;
+			}
+
+
+			// ---------------------------------------------------------------- //
 			default:
 				break;
 			// printf("Unexpected user mode exception (%d %d)", which, syscallType);
