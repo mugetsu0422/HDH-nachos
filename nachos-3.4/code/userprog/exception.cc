@@ -24,7 +24,6 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
-#include "progtest.cc"
 
 #define MaxFileLength 255
 // type cho việc mở file
@@ -100,6 +99,29 @@ int System2User(int virtAddr, int len, char* buffer)
 }
 
 
+void StartProcess_2(int threadID)
+{
+    char* filename = mythreads[threadID]->getFileName();
+    OpenFile *executable = fileSystem->Open(filename);
+    AddrSpace *space;
+
+    if (executable == NULL) {
+	printf("Unable to open file %s\n", filename);
+	return;
+    }
+    space = new AddrSpace(executable);    
+    currentThread->space = space;
+
+    delete executable;			// close file
+
+    space->InitRegisters();		// set the initial register values
+    space->RestoreState();		// load page table register
+
+    machine->Run();			// jump to the user progam
+    ASSERT(FALSE);			// machine->Run never returns;
+					// the address space exits
+					// by doing the syscall "exit"
+}
 
 
 void ExceptionHandler(ExceptionType which)
@@ -563,8 +585,7 @@ void ExceptionHandler(ExceptionType which)
 				if(threadID != -1)
 				{
 					mythreads[threadID] = new Thread(filename);
-					mythreads[threadID]->ID = threadID;
-					mythreads[threadID]->Fork(StartProcessfilename, threadID);
+					mythreads[threadID]->Fork(StartProcess_2, threadID);
 				}
 				machine->WriteRegister(2, threadID);
 				delete[] filename;
