@@ -24,6 +24,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+#include <unistd.h>	// use for sleep in C
 
 #define MaxFileLength 255
 // type cho việc mở file
@@ -101,7 +102,7 @@ int System2User(int virtAddr, int len, char* buffer)
 
 void StartProcess_2(int threadID)
 {
-    char* filename = mythreads[threadID]->getFileName();
+    char* filename = mythreads[threadID]->getName();
     OpenFile *executable = fileSystem->Open(filename);
     AddrSpace *space;
 
@@ -593,6 +594,15 @@ void ExceptionHandler(ExceptionType which)
 				break;
 			}
 
+			// ---------------------------------------------------------------- //
+			case SC_Sleep:
+			{
+				// void Sleep(int time);
+				int s = machine->ReadRegister(4);
+				machine->WriteRegister(2, s);
+				sleep(s);
+				break;
+			}
 
 			// ---------------------------------------------------------------- //
 			default:

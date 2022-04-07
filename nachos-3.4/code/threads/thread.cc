@@ -34,7 +34,7 @@
 
 Thread::Thread(char* threadName)
 {
-    name = threadName;
+    name = strdup(threadName);
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
@@ -62,6 +62,7 @@ Thread::~Thread()
     ASSERT(this != currentThread);
     if (stack != NULL)
 	DeallocBoundedArray((char *) stack, StackSize * sizeof(int));
+    delete[] name;
 }
 
 //----------------------------------------------------------------------
