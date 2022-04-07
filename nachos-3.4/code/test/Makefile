@@ -100,7 +100,7 @@ createfile: createfile.o start.o
 
 scheduler.o: scheduler.c
 	$(CC) $(CFLAGS) -c scheduler.c
-scheduler: creaschedulertefile.o start.o
+scheduler: scheduler.o start.o
 	$(LD) $(LDFLAGS) start.o scheduler.o -o scheduler.coff
 	../bin/coff2noff scheduler.coff scheduler
 

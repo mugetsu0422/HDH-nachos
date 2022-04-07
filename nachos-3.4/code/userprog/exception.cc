@@ -570,8 +570,9 @@ void ExceptionHandler(ExceptionType which)
 					delete[] filename;
 					break;
 				}
+				delete fileSystem->table[freeSlot];
 
-				// Tìm ô còn trổng của threads
+				// Tìm ô còn trống của threads
 				int threadID = -1;
 				for(int i = 0; i < ThreadsSize; i++)
 				{
