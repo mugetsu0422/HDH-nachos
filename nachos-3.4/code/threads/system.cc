@@ -158,7 +158,7 @@ Initialize(int argc, char **argv)
     mythreads = new Thread*[10];
     for(int i = 0; i < 10; i++)
         mythreads[i] = NULL;
-    semjoin = new Semaphore("sem", 0);
+    sem = new Semaphore("sem", 0);
 #endif
 
 #ifdef FILESYS
