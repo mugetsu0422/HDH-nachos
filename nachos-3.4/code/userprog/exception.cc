@@ -583,9 +583,9 @@ void ExceptionHandler(ExceptionType which)
 			{
 				// void Sleep();
 
-				sem->V();	//down
-				sem->P();	//up
-				
+				sem->P();	//down
+				sem->V();	//up
+
 				break;
 			}
 

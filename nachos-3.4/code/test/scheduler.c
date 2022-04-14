@@ -9,7 +9,6 @@ int main()
     Write("Ping-Pong test starting ...\n\n", 32, output);
     pingID = Exec("./test/ping");
     pongID = Exec("./test/pong");
-    Write("Start of scheduler\n", 32, output);
     Wait();
     return 0;
 }

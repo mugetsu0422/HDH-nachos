@@ -150,7 +150,7 @@ Delete:
 	.globl Wait
 	.ent	Wait
 Wait:
-	addiu $2,$0,Wait
+	addiu $2,$0,SC_Wait
 	syscall
 	j	$31
 	.end Wait
