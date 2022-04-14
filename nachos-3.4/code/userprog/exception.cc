@@ -537,6 +537,7 @@ void ExceptionHandler(ExceptionType which)
 							delete[] filename;
 							break;
 						}
+						break;
 					}
 					else
 					{
@@ -571,11 +572,11 @@ void ExceptionHandler(ExceptionType which)
 
 				Thread* temp;
 				temp = new Thread(filename);
-				temp->Fork(StartProcess_2, threadID);
+				temp->Fork(StartProcess_2, freeSlot);
 				// mythreads[threadID] = new Thread(filename);
 				// mythreads[threadID]->Fork(StartProcess_2, threadID);
 
-				machine->WriteRegister(2, threadID);
+				machine->WriteRegister(2, freeSlot);
 				delete[] filename;
 				break;
 			}
