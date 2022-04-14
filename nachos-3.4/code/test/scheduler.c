@@ -10,9 +10,6 @@ int main()
     pingID = Exec("./test/ping");
     pongID = Exec("./test/pong");
     Write("Start of scheduler\n", 32, output);
-    Sleep(pingID);
-    Sleep(pongID);
-    Write(&a, 1, output);
-    Write("End of scheduler\n", 32, output);
+    Wait();
     return 0;
 }
