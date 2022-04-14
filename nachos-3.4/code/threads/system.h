@@ -38,6 +38,8 @@ extern Machine* machine;	// user program memory and registers
 extern SynchConsole* gSynchConsole;
 extern BitMap* pages;		// manage pages
 extern Thread** mythreads;	
+extern Semaphore* semjoin;	
+extern Semaphore* semexit;	
 #endif
 
 #ifdef FILESYS_NEEDED 		// FILESYS or FILESYS_STUB 

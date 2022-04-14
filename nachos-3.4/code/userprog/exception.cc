@@ -31,6 +31,8 @@
 #define ReadWrite 0
 #define ReadOnly 1
 #define ThreadsSize 10
+extern void StartProcess_2(int id);
+extern void StartProcess(char *filename);
 
 //----------------------------------------------------------------------
 // ExceptionHandler
@@ -100,29 +102,7 @@ int System2User(int virtAddr, int len, char* buffer)
 }
 
 
-void StartProcess_2(int threadID)
-{
-    char* filename = mythreads[threadID]->getName();
-    OpenFile *executable = fileSystem->Open(filename);
-    AddrSpace *space;
 
-    if (executable == NULL) {
-	printf("Unable to open file %s\n", filename);
-	return;
-    }
-    space = new AddrSpace(executable);    
-    currentThread->space = space;
-
-    delete executable;			// close file
-
-    space->InitRegisters();		// set the initial register values
-    space->RestoreState();		// load page table register
-
-    machine->Run();			// jump to the user progam
-    ASSERT(FALSE);			// machine->Run never returns;
-					// the address space exits
-					// by doing the syscall "exit"
-}
 
 
 void ExceptionHandler(ExceptionType which)
@@ -551,6 +531,7 @@ void ExceptionHandler(ExceptionType which)
 						break;
 					}
 				}
+
 				if(freeSlot != -1)
 				{
 					// Mở file đọc và ghi; và file chỉ đọc
@@ -571,7 +552,8 @@ void ExceptionHandler(ExceptionType which)
 					delete[] filename;
 					break;
 				}
-				delete fileSystem->table[freeSlot];
+
+				//delete fileSystem->table[freeSlot];
 
 				// Tìm ô còn trống của threads
 				int threadID = -1;
@@ -586,7 +568,9 @@ void ExceptionHandler(ExceptionType which)
 				
 				if(threadID != -1)
 				{
+					
 					mythreads[threadID] = new Thread(filename);
+					if(mythreads[threadID] == NULL) printf("NULL\n");
 					mythreads[threadID]->Fork(StartProcess_2, threadID);
 				}
 				machine->WriteRegister(2, threadID);
@@ -599,10 +583,19 @@ void ExceptionHandler(ExceptionType which)
 			{
 				// void Sleep(int time);
 				int s = machine->ReadRegister(4);
+
+				semjoin->V();	//down
+				semexit->P();	//up
+				semjoin->P();	//down
+				semexit->V();	//up
+				
+				//sleep(s);
 				machine->WriteRegister(2, s);
-				sleep(s);
 				break;
 			}
+
+			// ---------------------------------------------------------------- //
+
 
 			// ---------------------------------------------------------------- //
 			default:

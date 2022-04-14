@@ -32,6 +32,8 @@ Machine *machine;	// user program memory and registers
 SynchConsole* gSynchConsole;    // for read and write console
 BitMap* pages;      // manage pages
 Thread** mythreads;	
+Semaphore* semjoin;	// semaphore
+Semaphore* semexit;
 #endif
 
 #ifdef NETWORK
@@ -157,6 +159,8 @@ Initialize(int argc, char **argv)
     mythreads = new Thread*[10];
     for(int i = 0; i < 10; i++)
         mythreads[i] = NULL;
+    semjoin = new Semaphore("semjoin", 0);
+    semexit = new Semaphore("semexit", 0);
 #endif
 
 #ifdef FILESYS
@@ -189,8 +193,17 @@ Cleanup()
     delete gSynchConsole;
     delete pages;
     for(int i = 0; i < 10; i++)
-        if(mythreads[i] != NULL) delete mythreads[i];
+    {
+	if(mythreads[i] != NULL) 
+	{
+		mythreads[i]->freeSpace();
+		//mythreads[i]->Finish();
+		delete mythreads[i];
+	}
+    }
     delete[] mythreads;
+    delete semjoin;
+    delete semexit;
 #endif
 
 #ifdef FILESYS_NEEDED
