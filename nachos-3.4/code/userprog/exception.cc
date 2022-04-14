@@ -528,51 +528,53 @@ void ExceptionHandler(ExceptionType which)
 					if(fileSystem->table[i] == NULL)
 					{
 						freeSlot = i;
-						break;
+						// Mở file đọc và ghi; và file chỉ đọc
+						fileSystem->table[freeSlot] = fileSystem->Open(filename, ReadOnly);
+						if(fileSystem->table[freeSlot] == NULL)
+						{
+							printf("Exec: File khong ton tai\n");
+							machine->WriteRegister(2, -1);
+							delete[] filename;
+							break;
+						}
 					}
-				}
-
-				if(freeSlot != -1)
-				{
-					// Mở file đọc và ghi; và file chỉ đọc
-					fileSystem->table[freeSlot] = fileSystem->Open(filename, ReadOnly);
-					if(fileSystem->table[freeSlot] == NULL)
+					else
 					{
-						printf("Exec: File khong ton tai\n");
-						machine->WriteRegister(2, -1);
-						delete[] filename;
-						break;
+						if(strcmp(filename, fileSystem->table[i]->filename) == 0)
+						{
+							freeSlot = i;
+							break;
+						}	
 					}
-
 				}
-				else
+
+				if(freeSlot == -1)
 				{
 					printf("Bang mo ta file khong con o trong\n");
 					machine->WriteRegister(2, -1);
 					delete[] filename;
-					break;
+					return;
 				}
 
-				//delete fileSystem->table[freeSlot];
 
-				// Tìm ô còn trống của threads
-				int threadID = -1;
-				for(int i = 0; i < ThreadsSize; i++)
-				{
-					if(mythreads[i] == NULL)
-					{
-						threadID = i;
-						break;
-					}
-				}
+				// // Tìm ô còn trống của threads
+				// int threadID = -1;
+				// for(int i = 0; i < ThreadsSize; i++)
+				// {
+				// 	if(mythreads[i] == NULL)
+				// 	{
+				// 		threadID = i;
+				// 		break;
+				// 	}
+				// }
 				
-				if(threadID != -1)
-				{
-					
-					mythreads[threadID] = new Thread(filename);
-					if(mythreads[threadID] == NULL) printf("NULL\n");
-					mythreads[threadID]->Fork(StartProcess_2, threadID);
-				}
+
+				Thread* temp;
+				temp = new Thread(filename);
+				temp->Fork(StartProcess_2, threadID);
+				// mythreads[threadID] = new Thread(filename);
+				// mythreads[threadID]->Fork(StartProcess_2, threadID);
+
 				machine->WriteRegister(2, threadID);
 				delete[] filename;
 				break;
@@ -581,7 +583,7 @@ void ExceptionHandler(ExceptionType which)
 			// ---------------------------------------------------------------- //
 			case SC_Wait:
 			{
-				// void Sleep();
+				// void Wait();
 
 				sem->P();	//down
 				sem->V();	//up

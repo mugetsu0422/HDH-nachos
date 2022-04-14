@@ -22,12 +22,12 @@
 
 void StartProcess_2(int id)
 {
-    char* filename = mythreads[id]->getName();
-    OpenFile *executable = fileSystem->Open(filename);
+    //char* filename = mythreads[id]->getName();
+    OpenFile *executable = fileSystem->table[id];
     AddrSpace *space;
 
     if (executable == NULL) {
-	printf("Unable to open file %s\n", filename);
+	printf("Unable to open file %s\n", fileSystem->table[id]->filename);
 	return;
     }
     space = new AddrSpace(executable);    

@@ -57,17 +57,12 @@ Thread::Thread(char* threadName)
 
 Thread::~Thread()
 {
-	char* name1 = getName();
-	printf("%s\n", name1);
 	if(this != currentThread) printf("Not current thread\n");
-	char* name2 = currentThread->getName();
-	printf("%s\n", name2);
     DEBUG('t', "Deleting thread \"%s\"\n", name);
     delete[] name;
     ASSERT(this != currentThread);
     if (stack != NULL)
 	DeallocBoundedArray((char *) stack, StackSize * sizeof(int));
-    printf("Deconstructor\n\n");
 }
 
 //----------------------------------------------------------------------

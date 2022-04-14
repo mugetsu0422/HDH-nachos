@@ -7,8 +7,10 @@ int main()
     int pingID, pongID;
     char a = '\n';
     Write("Ping-Pong test starting ...\n\n", 32, output);
-    pingID = Exec("./test/ping");
-    pongID = Exec("./test/pong");
-    Wait();
+    while(1)
+    {
+        pingID = Exec("./test/ping");
+        pongID = Exec("./test/pong");
+    }
     return 0;
 }
