@@ -72,7 +72,6 @@ AddrSpace::AddrSpace(OpenFile *executable)
     	SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
-	//addrLock->P();
 
 // how big is address space?
     size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
@@ -82,8 +81,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
     size = numPages * PageSize;
 
     int numclear = pages->NumClear();
-    //printf("\n\nSize: %d | numPages: %d | PageSize: %d | Numclear: %d\n\n", size, numPages, PageSize, numclear);  
-
+    
     ASSERT(numPages <= NumPhysPages);		// check we're not trying
 						// to run anything too big --
 						// at least until we have
@@ -91,10 +89,9 @@ AddrSpace::AddrSpace(OpenFile *executable)
 
     if(numPages > numclear)
     {
-	numPages = 0;
-	delete executable;
-	//addrLock->V();
-	return;
+        numPages = 0;
+        delete executable;
+        return;
     }
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
@@ -111,10 +108,8 @@ AddrSpace::AddrSpace(OpenFile *executable)
         pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
                         // a separate page, we could set its 
                         // pages to be read-only
-	//printf("Physic Pages %d \n", pageTable[i].physicalPage);
     }
 
-    //addrLock->V();
     
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment

@@ -579,18 +579,13 @@ void ExceptionHandler(ExceptionType which)
 			}
 
 			// ---------------------------------------------------------------- //
-			case SC_Sleep:
+			case SC_Wait:
 			{
-				// void Sleep(int time);
-				int s = machine->ReadRegister(4);
+				// void Sleep();
 
-				semjoin->V();	//down
-				semexit->P();	//up
-				semjoin->P();	//down
-				semexit->V();	//up
+				sem->V();	//down
+				sem->P();	//up
 				
-				//sleep(s);
-				machine->WriteRegister(2, s);
 				break;
 			}
 

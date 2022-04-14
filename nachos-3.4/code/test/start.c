@@ -147,13 +147,13 @@ Delete:
 	j	$31
 	.end Delete
 
-	.globl Sleep
-	.ent	Sleep
-Sleep:
-	addiu $2,$0,SC_Sleep
+	.globl Wait
+	.ent	Wait
+Wait:
+	addiu $2,$0,Wait
 	syscall
 	j	$31
-	.end Sleep
+	.end Wait
 
 /* dummy function to keep gcc happy */
         .globl  __main
