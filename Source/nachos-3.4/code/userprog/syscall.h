@@ -31,7 +31,6 @@
 #define SC_Yield    10
 #define SC_Seek     11
 #define SC_Delete   12
-#define SC_Wait     13
 
 
 
@@ -137,9 +136,6 @@ int Seek(int pos, OpenFileID id);
 
 // Xóa file
 int Delete(char *name);
-
-// wait
-void Wait();   
 
 #endif /* IN_ASM */
 
