@@ -14,6 +14,6 @@ Source/nachos-3.4/code/test/delete
 Source/nachos-3.4/code/test/halt
 Source/nachos-3.4/code/test/matmult
 Source/nachos-3.4/code/test/sort
-Source/nachos-3.4/code/bin/ping
-Source/nachos-3.4/code/bin/pong
-Source/nachos-3.4/code/bin/scheduler
+Source/nachos-3.4/code/test/ping
+Source/nachos-3.4/code/test/pong
+Source/nachos-3.4/code/test/scheduler
