@@ -30,7 +30,6 @@
 // type cho việc mở file
 #define ReadWrite 0
 #define ReadOnly 1
-#define ThreadsSize 10
 extern void StartProcess_2(int id);
 extern void StartProcess(char *filename);
 
@@ -556,44 +555,15 @@ void ExceptionHandler(ExceptionType which)
 					delete[] filename;
 					return;
 				}
-
-
-				// // Tìm ô còn trống của threads
-				// int threadID = -1;
-				// for(int i = 0; i < ThreadsSize; i++)
-				// {
-				// 	if(mythreads[i] == NULL)
-				// 	{
-				// 		threadID = i;
-				// 		break;
-				// 	}
-				// }
 				
-
 				Thread* temp;
 				temp = new Thread(filename);
 				temp->Fork(StartProcess_2, freeSlot);
-				// mythreads[threadID] = new Thread(filename);
-				// mythreads[threadID]->Fork(StartProcess_2, threadID);
 
 				machine->WriteRegister(2, freeSlot);
 				delete[] filename;
 				break;
 			}
-
-			// ---------------------------------------------------------------- //
-			case SC_Wait:
-			{
-				// void Wait();
-
-				sem->P();	//down
-				sem->V();	//up
-
-				break;
-			}
-
-			// ---------------------------------------------------------------- //
-
 
 			// ---------------------------------------------------------------- //
 			default:

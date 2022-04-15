@@ -31,8 +31,6 @@ SynchDisk   *synchDisk;
 Machine *machine;	// user program memory and registers
 SynchConsole* gSynchConsole;    // for read and write console
 BitMap* pages;      // manage pages
-Thread** mythreads;	
-Semaphore* sem;	// semaphore
 #endif
 
 #ifdef NETWORK
@@ -155,10 +153,6 @@ Initialize(int argc, char **argv)
     machine = new Machine(debugUserProg);	// this must come first
     gSynchConsole = new SynchConsole();
     pages = new BitMap(256);
-    mythreads = new Thread*[10];
-    for(int i = 0; i < 10; i++)
-        mythreads[i] = NULL;
-    sem = new Semaphore("sem", 0);
 #endif
 
 #ifdef FILESYS
@@ -190,17 +184,6 @@ Cleanup()
     delete machine;
     delete gSynchConsole;
     delete pages;
-    for(int i = 0; i < 10; i++)
-    {
-	if(mythreads[i] != NULL) 
-	{
-		mythreads[i]->freeSpace();
-		//mythreads[i]->Finish();
-		//delete mythreads[i];
-	}
-    }
-    delete[] mythreads;
-    delete sem;
 #endif
 
 #ifdef FILESYS_NEEDED

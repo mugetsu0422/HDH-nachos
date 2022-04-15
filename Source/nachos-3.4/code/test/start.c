@@ -147,14 +147,6 @@ Delete:
 	j	$31
 	.end Delete
 
-	.globl Wait
-	.ent	Wait
-Wait:
-	addiu $2,$0,SC_Wait
-	syscall
-	j	$31
-	.end Wait
-
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
